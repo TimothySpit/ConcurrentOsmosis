@@ -1,4 +1,4 @@
-package np2015;
+package concurrent;
 
 public interface ImageConvertible {
 	/**

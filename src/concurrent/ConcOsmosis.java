@@ -1,4 +1,4 @@
-package np2015;
+package concurrent;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 
 import com.google.gson.Gson;
 
-public class NPOsmose {
+public class ConcOsmosis {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		Gson gson = new Gson();

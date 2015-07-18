@@ -1,4 +1,4 @@
-package np2015;
+package concurrent;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -31,11 +31,11 @@ public class GraphInfo implements GuardedCommand {
 	}
 	
 	// adds the guard from (x,y) to its neighbor if gx <= x < gX /\ gy <= y < gY with rate  a*xy + b*x + c*y + d
-	public void addGuard(int gx, int gX, int gy, int gY,  Neighbor neighbor, double a, double b, double c, double d) {
+	public void addGuard(int gx, int gX, int gy, int gY,  Neighbour neighbour, double a, double b, double c, double d) {
 		assert(!allGuardsAdded);
 		final int[] guard = new int[5];
 		final double[] command = new double[4];
-		guard[0] = neighbor.ordinal();		
+		guard[0] = neighbour.ordinal();		
 		guard[1] = gx;
 		guard[2] = gX;
 		guard[3] = gy;
@@ -84,16 +84,16 @@ public class GraphInfo implements GuardedCommand {
 	 * By just providing the x and y coordinate + the desired neighbor
 	 * you'll get the correct rate
 	 */
-	public synchronized double getRateForTarget(int x, int y, Neighbor where) {
+	public synchronized double getRateForTarget(int x, int y, Neighbour where) {
 		assert(guards.size() > 0);
 		assert(allGuardsAdded);
-		if (where == Neighbor.Left && x == 0)
+		if (where == Neighbour.Left && x == 0)
 			return 0;
-		else if (where == Neighbor.Right && x == width-1)
+		else if (where == Neighbour.Right && x == width-1)
 			return 0;
-		else if (where == Neighbor.Top && y == 0)
+		else if (where == Neighbour.Top && y == 0)
 			return 0;
-		else if (where == Neighbor.Bottom && y == height-1)
+		else if (where == Neighbour.Bottom && y == height-1)
 			return 0;
 		for (int i = 0; i<guards.size(); ++i) {
 			int[] guard = guards.get(i);
