@@ -51,7 +51,7 @@ public class Node
      */
     public int getY()
     {
-        
+        return y;
     }
     
     /**
