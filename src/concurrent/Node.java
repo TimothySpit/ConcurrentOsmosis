@@ -46,6 +46,15 @@ public class Node
     }
     
     /**
+     * Returns the y-coordinate of this node.
+     * @return the y-coordinate of this Node
+     */
+    public int getY()
+    {
+        
+    }
+    
+    /**
      * Passes a specific amount of this Nodes value to the Node lying north of it.
      * If there is currently no Node and the value to be passed is greater zero,
      * a new Node is created and returned. Otherwise nothing happens.
@@ -55,6 +64,11 @@ public class Node
      */
     public Node updatePrevious(double value)
     {
+        double rate = rates[1];
+        if(rate > 0)
+        {
+            
+        }
         return this;
     }
     
@@ -68,6 +82,7 @@ public class Node
      */
     public Node updateNext(double value)
     {
+        double rate = rates[3];
         return this;
     }
 }
