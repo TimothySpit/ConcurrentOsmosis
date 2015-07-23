@@ -9,6 +9,7 @@ public class Column implements Runnable {
 	private final int x;
 	public static int height;
 	public static int epsilon;
+	private GraphInfo ginfo;
 	
 	private int stepsTotal;
 	private int stepsDone;
@@ -17,8 +18,10 @@ public class Column implements Runnable {
 	private Exchanger right;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int x_coord, int max_height, int epsilon) {
+	public Column(int x_coord, GraphInfo ginfo) {
 		x = x_coord;
+		this.ginfo = ginfo;
+		height = ginfo.height;
 	}
 
 	@Override
@@ -27,21 +30,27 @@ public class Column implements Runnable {
 
 	}
 	
-	public void performStep()
+	public void performSteps()
 	{
 		while(stepsTotal < stepsDone)
 		{
-			
 			boolean verticalConvergencePossible = true;
 			ListIterator<Node> iterator = nodeList.listIterator();
 			while(iterator.hasNext())
 			{
 				Node currentNode = iterator.next();
-				/*Node previous = currentNode.updatePrevious();
+				Node previous = currentNode.updatePrevious();
 				if (previous != null)
 				{
-					
-				}*/
+					initializeNode(previous);
+				}
+				Node next = currentNode.updateNext();
+				if (next != null)
+				{
+					initializeNode(next);
+				}
+				
+				//TODO: When do I flush?
 			}
 			stepsDone ++;
 		}
@@ -49,7 +58,18 @@ public class Column implements Runnable {
 	
 	synchronized void initializeNode(Node node)
 	{
+		int y = node.getY();
+		double rate = ginfo.getRateForTarget(x, y, Neighbour.Left);
+		node.setRate(Neighbour.Left, rate);
 		
+		rate = ginfo.getRateForTarget(x, y, Neighbour.Top);
+		node.setRate(Neighbour.Top, rate);
+		
+		rate = ginfo.getRateForTarget(x, y, Neighbour.Right);
+		node.setRate(Neighbour.Right, rate);
+		
+		rate = ginfo.getRateForTarget(x, y, Neighbour.Bottom);
+		node.setRate(Neighbour.Bottom, rate);
 	}
 	
 	synchronized void insertNode(Node node)
