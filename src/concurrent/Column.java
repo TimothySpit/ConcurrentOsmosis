@@ -10,6 +10,7 @@ public class Column implements Runnable {
 	public static int height;
 	public static int epsilon;
 	private GraphInfo ginfo;
+	private ConcOsmosis cosmosis;
 	
 	private int stepsTotal;
 	private int stepsDone;
@@ -18,10 +19,12 @@ public class Column implements Runnable {
 	private Exchanger right;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int x_coord, GraphInfo ginfo) {
+	public Column(int x_coord, int stepsTotal, ConcOsmosis cosmosis,GraphInfo ginfo) {
 		x = x_coord;
 		this.ginfo = ginfo;
 		height = ginfo.height;
+		this.cosmosis = cosmosis;
+		stepsDone = 0;
 	}
 
 	@Override
@@ -30,6 +33,10 @@ public class Column implements Runnable {
 
 	}
 	
+	/**
+     * Iterates through the column and exchanges values
+     * 
+     */
 	public void performSteps()
 	{
 		while(stepsTotal < stepsDone)
@@ -56,6 +63,19 @@ public class Column implements Runnable {
 		}
 	}
 	
+	/**
+     * Exchanges values with the left exchanger, then the right exchanger
+     */
+	public void exchange()
+	{
+		
+	}
+	
+	/**
+     * Gives an instance of node all four rates. 
+     * 
+     * @param node the node which gets rates
+     */
 	synchronized void initializeNode(Node node)
 	{
 		int y = node.getY();
@@ -72,6 +92,11 @@ public class Column implements Runnable {
 		node.setRate(Neighbour.Bottom, rate);
 	}
 	
+	/**
+     * Inserts a node in the list, list remains sorted by y-coordinates
+     * 
+     * @param node the node which gets inserted
+     */
 	synchronized void insertNode(Node node)
 	{
 		int goalY = node.getY();
@@ -86,6 +111,7 @@ public class Column implements Runnable {
 			}
 		}
 		nodeList.add(index, node);
+		initializeNode(node);
 	}
 
 }
