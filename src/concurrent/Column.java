@@ -5,21 +5,51 @@ import java.util.ListIterator;
 import java.util.concurrent.Exchanger;
 
 public class Column implements Runnable {
+	
+	private final int x;
+	public static int height;
+	public static int epsilon;
+	
+	private int stepsTotal;
+	private int stepsDone;
 
-	private static int x;
-	private static int height;
 	private Exchanger left;
 	private Exchanger right;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int x_coord, int max_height) {
-		// TODO Auto-generated constructor stub
+	public Column(int x_coord, int max_height, int epsilon) {
+		x = x_coord;
 	}
 
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public void performStep()
+	{
+		while(stepsTotal < stepsDone)
+		{
+			
+			boolean verticalConvergencePossible = true;
+			ListIterator<Node> iterator = nodeList.listIterator();
+			while(iterator.hasNext())
+			{
+				Node currentNode = iterator.next();
+				/*Node previous = currentNode.updatePrevious();
+				if (previous != null)
+				{
+					
+				}*/
+			}
+			stepsDone ++;
+		}
+	}
+	
+	synchronized void initializeNode(Node node)
+	{
+		
 	}
 	
 	synchronized void insertNode(Node node)
@@ -30,7 +60,7 @@ public class Column implements Runnable {
 		int index = 0;
 		while (iterator.hasNext())
 		{
-			if (goalY < iterator.next().getY())
+			if (iterator.next().getY() < goalY)
 			{
 				index ++;
 			}
