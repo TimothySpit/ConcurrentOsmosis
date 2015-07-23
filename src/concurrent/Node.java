@@ -22,7 +22,7 @@ public class Node
     //This nodes successing neighbour
     private Node next;
     
-    //Transmission rates of this node to its neighbours (0=west, 1=north, 2=east, 3=south).
+    //Transmission rates of this node to its neighbours according to the enum
     private final double[] rates = new double[4];
     
     
@@ -75,12 +75,12 @@ public class Node
     /**
      * Sets the transition rates for each direction.
      * 
-     * @param direction 0 = west, 1 = north, 2 = east, 3 = south.
+     * @param direction the neighbour to which this rate is the transition
      * @param rate the transition rate for this direction
      */
-    public void setRate(byte direction, double rate)
+    public void setRate(Neighbour direction, double rate)
     {
-        rates[direction] = rate;
+        rates[direction.ordinal()] = rate;
     }
     
     /**
@@ -92,7 +92,7 @@ public class Node
      */
     public Node updatePrevious()
     {
-        double rate = rates[1];
+        double rate = rates[Neighbour.Top.ordinal()];
         double pass = rate * value;
         if(pass > 0)
         {
@@ -116,7 +116,7 @@ public class Node
      */
     public Node updateNext()
     {
-        double rate = rates[3];
+        double rate = rates[Neighbour.Bottom.ordinal()];
         double pass = rate * value;
         if(pass > 0)
         {
