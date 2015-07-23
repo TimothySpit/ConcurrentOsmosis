@@ -5,12 +5,14 @@ package concurrent;
  * which is passed with specific rates to its neighbours.
  * 
  * @author Timo Speith (& Magnus Halbe)
- * @version 0.1
+ * @version 0.5
  */
 public class Node
 {
     //the value currently hold by this node
     double value;
+    //the change which this node undergoes during one turn
+    double change;
     
     //y-coordinate of this Node in its specific column
     private int y;
@@ -33,7 +35,12 @@ public class Node
     public Node(double value, int y)
     {
         this.value = value;
+        this.change = 0.0;
+        
         this.y = y;
+        
+        this.previous = null;
+        this.next = null;
     }
     
     /**
@@ -55,21 +62,49 @@ public class Node
     }
     
     /**
+     * Registers changes during a turn. All changes can be applied via @see{flush}
+     * at the and of one turn.
+     * 
+     * @param value 
+     */
+    private void register(double value)
+    {
+        change += value;
+    }
+    
+    /**
+     * Sets the transition rates for each direction.
+     * 
+     * @param direction 0 = west, 1 = north, 2 = east, 3 = south.
+     * @param rate the transition rate for this direction
+     */
+    public void setRate(byte direction, double rate)
+    {
+        rates[direction] = rate;
+    }
+    
+    /**
      * Passes a specific amount of this Nodes value to the Node lying north of it.
      * If there is currently no Node and the value to be passed is greater zero,
      * a new Node is created and returned. Otherwise nothing happens.
      * 
-     * @param value the value of this Node (to get via @see{getValue}). 
      * @return the Node created by this Method, if any was created, null otherwise
      */
-    public Node updatePrevious(double value)
+    public Node updatePrevious()
     {
         double rate = rates[1];
-        if(rate > 0)
+        double pass = rate * value;
+        if(pass > 0)
         {
-            
+            register(-pass);
+            if(previous == null)
+            {
+                previous = new Node(pass, y-1);
+                return previous;
+            }
+            previous.register(pass);
         }
-        return this;
+        return null;
     }
     
     /**
@@ -77,12 +112,36 @@ public class Node
      * If there is currently no Node and the value to be passed is greater zero,
      * a new Node is created and returned. Otherwise nothing happens.
      * 
-     * @param value the value of this Node (to get via @see{getValue}). 
      * @return the Node created by this Method, if any was created, null otherwise
      */
-    public Node updateNext(double value)
+    public Node updateNext()
     {
         double rate = rates[3];
-        return this;
+        double pass = rate * value;
+        if(pass > 0)
+        {
+            register(-pass);
+            if(next == null)
+            {
+                next = new Node(pass, y+1);
+                return next;
+            }
+            next.register(pass);
+        }
+        return null;
+    }
+    
+    /**
+     * Method to be invoked every turn. Calculates the changes made during the turn
+     * to this nodes value. This method also detects convergence.
+     * 
+     * @return true if the changes made during this turn are less than epsilon, false otherwise.
+     */
+    public boolean flush()
+    {
+        boolean result = change <= Column.epsilon;
+        value += change;
+        change = 0.0;
+        return result;
     }
 }
