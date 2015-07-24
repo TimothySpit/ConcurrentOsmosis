@@ -65,9 +65,9 @@ public class Node
      * Registers changes during a turn. All changes can be applied via @see{flush}
      * at the and of one turn.
      * 
-     * @param value 
+     * @param value the value to be added to the changes
      */
-    private void register(double value)
+    public void register(double value)
     {
         change += value;
     }
@@ -129,6 +129,22 @@ public class Node
             next.register(pass);
         }
         return null;
+    }
+    
+    public double updateLeft()
+    {
+        double rate = rates[Neighbour.Left.ordinal()];
+        double pass = rate * value;
+        register(-pass);
+        return pass;
+    }
+    
+    public double updateRight()
+    {
+        double rate = rates[Neighbour.Right.ordinal()];
+        double pass = rate * value;
+        register(-pass);
+        return pass;
     }
     
     /**
