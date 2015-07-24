@@ -50,11 +50,15 @@ public class Column implements Runnable {
 				if (previous != null)
 				{
 					initializeNode(previous);
+					iterator.previous();
+					iterator.add(previous);
+					iterator.next();
 				}
 				Node next = currentNode.updateNext();
 				if (next != null)
 				{
 					initializeNode(next);
+					iterator.add(next);
 				}
 				
 				//TODO: When do I flush?
