@@ -131,7 +131,13 @@ public class Node
         return null;
     }
     
-    public double updateLeft()
+    /**
+     * Returns a specific amount of this Nodes value that would be passed to the Node
+     * lying east of it. Also registers this amount to be removed from this node.
+     * 
+     * @return the double that contains the amount that would be output
+     */
+    public double emitLeft()
     {
         double rate = rates[Neighbour.Left.ordinal()];
         double pass = rate * value;
@@ -139,7 +145,13 @@ public class Node
         return pass;
     }
     
-    public double updateRight()
+    /**
+     * Returns a specific amount of this Nodes value that would be passed to the Node
+     * lying west of it. Also registers this amount to be removed from this node.
+     * 
+     * @return the double that contains the amount that would be output
+     */
+    public double emitRight()
     {
         double rate = rates[Neighbour.Right.ordinal()];
         double pass = rate * value;

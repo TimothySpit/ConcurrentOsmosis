@@ -1,5 +1,7 @@
 package concurrent;
 
+import gnu.trove.list.array.TDoubleArrayList;
+
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.concurrent.Exchanger;
@@ -15,16 +17,18 @@ public class Column implements Runnable {
 	private int stepsTotal;
 	private int stepsDone;
 
-	private Exchanger left;
-	private Exchanger right;
+	private Exchanger<TDoubleArrayList> leftExchanger;
+	private Exchanger<TDoubleArrayList> rightExchanger;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int x_coord, int stepsTotal, ConcOsmosis cosmosis,GraphInfo ginfo) {
+	public Column(int x_coord, int stepsTotal, ConcOsmosis cosmosis,GraphInfo ginfo, Exchanger<TDoubleArrayList> left, Exchanger<TDoubleArrayList> right) {
 		x = x_coord;
 		this.ginfo = ginfo;
 		height = ginfo.height;
 		this.cosmosis = cosmosis;
 		stepsDone = 0;
+		leftExchanger = left;
+		rightExchanger = right;
 	}
 
 	@Override
@@ -47,6 +51,7 @@ public class Column implements Runnable {
 			{
 				Node currentNode = iterator.next();
 				Node previous = currentNode.updatePrevious();
+				Node next = currentNode.updateNext();
 				if (previous != null)
 				{
 					initializeNode(previous);
@@ -54,7 +59,6 @@ public class Column implements Runnable {
 					iterator.add(previous);
 					iterator.next();
 				}
-				Node next = currentNode.updateNext();
 				if (next != null)
 				{
 					initializeNode(next);
@@ -72,6 +76,48 @@ public class Column implements Runnable {
      */
 	public void exchange()
 	{
+		TDoubleArrayList leftValues = null;
+		TDoubleArrayList rightValues = null;
+		if (!isLeftmost())
+			leftValues = new TDoubleArrayList(height, 0.0);
+		if (!isRightmost())
+			rightValues = new TDoubleArrayList(height, 0.0);
+		ListIterator<Node> iterator = nodeList.listIterator();
+		while(iterator.hasNext())
+		{
+			Node currentNode = iterator.next();
+			if(!isLeftmost())
+			{
+				leftValues.set(currentNode.getY(), currentNode.emitLeft());
+			}
+			if (!isRightmost())
+			{
+				leftValues.set(currentNode.getY(), currentNode.emitRight());
+			}
+		}
+		
+		if(!isLeftmost())
+			try {
+				leftExchanger.exchange(leftValues);
+				//TODO: Add using values, convergence and stuff
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		else
+		{
+			//TODO: The leftmost column is about to exchange to the right
+		}
+		if(!isRightmost())
+			try {
+				rightExchanger.exchange(rightValues);
+				//TODO: Add using values, convergence and stuff
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		else
+		{
+			//TODO: Everyone just passed all their horizontal values
+		}
 		
 	}
 	
@@ -117,5 +163,14 @@ public class Column implements Runnable {
 		nodeList.add(index, node);
 		initializeNode(node);
 	}
+	
+	public synchronized boolean isLeftmost()
+	{
+		return (x == 0);
+	}
 
+	public boolean isRightmost()
+	{
+		return (x == ginfo.width-1);
+	}
 }
