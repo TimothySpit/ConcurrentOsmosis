@@ -34,12 +34,12 @@ public class Column implements Runnable
 	public void run()
         {
             
-	}
+        }
 	
-        /**
-        * Iterates through the column and exchanges values
-        * 
-        */
+    /**
+    * Iterates through the column and exchanges values
+    * 
+    */
 	public void performSteps()
 	{
 		while(stepsTotal < stepsDone)
@@ -63,8 +63,13 @@ public class Column implements Runnable
 					initializeNode(next);
 					iterator.add(next);
 				}
-				
-				//TODO: When do I flush?
+			}
+			iterator = nodeList.listIterator();
+			while(iterator.hasNext())
+			{
+				Node currentNode = iterator.next();
+				if (!currentNode.flush())
+					verticalConvergencePossible = false;
 			}
 			stepsDone ++;
 		}
@@ -94,10 +99,12 @@ public class Column implements Runnable
 				leftValues.set(currentNode.getY(), currentNode.emitRight());
 			}
 		}
+		ArrayList<Double> receivedFromLeft = null;
+		ArrayList<Double> receivedFromRight = null;
 		
 		if(!isLeftmost())
 			try {
-				ArrayList<Double> receivedFromLeft = leftExchanger.exchange(leftValues);
+				receivedFromLeft = leftExchanger.exchange(leftValues);
 				receiveHorizontal(receivedFromLeft);
 				
 				//TODO: Add convergence and stuff
@@ -110,16 +117,26 @@ public class Column implements Runnable
 		}
 		if(!isRightmost())
 			try {
-				ArrayList<Double> receivedFromRight = rightExchanger.exchange(rightValues);
-				receiveHorizontal(receivedFromRight);
-				
-				//TODO: Add using values, convergence and stuff
+				receivedFromRight = rightExchanger.exchange(rightValues);
+				//TODO: Add using convergence and stuff
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		else
 		{
 			//TODO: Everyone just passed all their horizontal values
+		}
+		boolean horizontalConvergencePossible = true;
+		if(!isLeftmost())
+			receiveHorizontal(receivedFromLeft);
+		if(!isRightmost())
+			receiveHorizontal(receivedFromRight);
+		iterator = nodeList.listIterator();
+		while(iterator.hasNext())
+		{
+			Node currentNode = iterator.next();
+			if (!currentNode.flush())
+				horizontalConvergencePossible = false;
 		}
 		
 	}
