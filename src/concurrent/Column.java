@@ -12,6 +12,7 @@ public class Column implements Runnable
     public static int height;
     public static int epsilon;
     private GraphInfo ginfo;
+    private boolean verticalConvergenceDetected;
 	
 	private int stepsTotal;
 	private int stepsDone;
@@ -28,6 +29,7 @@ public class Column implements Runnable
 		stepsDone = 0;
 		leftExchanger = left;
 		rightExchanger = right;
+		verticalConvergenceDetected = false;
 	}
 
 	@Override
@@ -71,6 +73,12 @@ public class Column implements Runnable
 				if (!currentNode.flush())
 					verticalConvergencePossible = false;
 			}
+			if (verticalConvergencePossible)
+			{
+				verticalConvergenceDetected = true;
+				//TODO: All future steps until stepsDone
+			}
+				
 			stepsDone ++;
 		}
 	}
