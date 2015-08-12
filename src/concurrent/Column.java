@@ -98,7 +98,7 @@ public class Column implements Runnable
 		if(!isLeftmost())
 			try {
 				ArrayList<Double> receivedFromLeft = leftExchanger.exchange(leftValues);
-				receiveVertical(receivedFromLeft);
+				receiveHorizontal(receivedFromLeft);
 				
 				//TODO: Add convergence and stuff
 			} catch (InterruptedException e) {
@@ -110,7 +110,9 @@ public class Column implements Runnable
 		}
 		if(!isRightmost())
 			try {
-				rightExchanger.exchange(rightValues);
+				ArrayList<Double> receivedFromRight = rightExchanger.exchange(rightValues);
+				receiveHorizontal(receivedFromRight);
+				
 				//TODO: Add using values, convergence and stuff
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -128,7 +130,7 @@ public class Column implements Runnable
 	 * 
 	 * @param TDoubleArrayList the double values that were received
 	 */
-	synchronized void receiveVertical(ArrayList<Double> receivedFromLeft)
+	synchronized void receiveHorizontal(ArrayList<Double> received)
 	{
 		ListIterator <Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
@@ -136,14 +138,14 @@ public class Column implements Runnable
 			//This while-loop registers added values in all existing nodes
 			Node currentNode = iterator.next();
 			int y = currentNode.getY();
-			currentNode.register(receivedFromLeft.get(y));
-			receivedFromLeft.set(y, 0.0);
+			currentNode.register(received.get(y));
+			received.set(y, 0.0);
 		}
 		
-		for(int y=0; y< receivedFromLeft.size(); y++)
+		for(int y=0; y< received.size(); y++)
 		{
 			//At this point value is only >0 when there was no corresponding node 
-			double value = receivedFromLeft.get(y);
+			double value = received.get(y);
 			if (value <= 0)
 			{
 				Node newNode = new Node(value, y);
