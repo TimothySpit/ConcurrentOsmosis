@@ -10,17 +10,23 @@ import com.google.gson.Gson;
 
 public class ConcOsmosis {
 
-        public static int steps = 100;
-        public static double epsilon = 0.00005;
+        private static final int originalSteps = 100;
+        public static int steps;
         
+        public static double epsilon;
+        
+        // Parameter for convergence
         private static int notifications = 0;
         private static int posnot = 0;
         
         private static int width, height;
     
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException, InterruptedException
+        {
 		Gson gson = new Gson();
 		String json = "";
+                
+                steps = originalSteps; // First step count is original step count
                 
 		// read data in
 		if (args.length != 0)
@@ -34,15 +40,18 @@ public class ConcOsmosis {
                 else
                 {System.err.println("You must provide the serialized file as the first argument!");}
                 
+                // Get info to work on
 		GraphInfo ginfo = gson.fromJson(json, GraphInfo.class);
                 
                 width = ginfo.width;
                 height = ginfo.height;
-                        
+                epsilon = ginfo.epsilon;
+                
+                //Create first Node
                 Set<Integer> keys = ginfo.column2row2initialValue.keySet();
                 
-		// Your implementation can now access ginfo to read out all important values
-		ImageConvertible graph = null; // <--- you should implement ImageConvertible to write the graph out
+                
+		ImageConvertible graph = null;
 		ginfo.write2File("./result.txt", graph);
 	}
         
@@ -55,6 +64,10 @@ public class ConcOsmosis {
                 if(posnot > 0)
                 {
                     steps /= 2;
+                }
+                else if(posnot == 0 && steps < originalSteps)
+                {
+                    steps *= 2;
                 }
                 notifications = 0;
             }
