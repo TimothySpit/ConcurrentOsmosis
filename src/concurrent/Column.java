@@ -98,8 +98,10 @@ public class Column implements Runnable {
 		
 		if(!isLeftmost())
 			try {
-				leftExchanger.exchange(leftValues);
-				//TODO: Add using values, convergence and stuff
+				TDoubleArrayList receivedFromLeft = leftExchanger.exchange(leftValues);
+				receiveVertical(receivedFromLeft);
+				
+				//TODO: Add convergence and stuff
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -119,6 +121,36 @@ public class Column implements Runnable {
 			//TODO: Everyone just passed all their horizontal values
 		}
 		
+	}
+	
+	/**
+	 * Updates all nodes (and creates new ones if needed)
+	 * with values emitted from the column on the left to this one
+	 * 
+	 * @param TDoubleArrayList the double values that were received
+	 */
+	synchronized void receiveVertical(TDoubleArrayList receivedFromLeft)
+	{
+		ListIterator <Node> iterator = nodeList.listIterator();
+		while(iterator.hasNext())
+		{
+			//This while-loop registers added values in all existing nodes
+			Node currentNode = iterator.next();
+			int y = currentNode.getY();
+			currentNode.register(receivedFromLeft.get(y));
+			receivedFromLeft.set(y, 0);
+		}
+		
+		for(int y=0; y< receivedFromLeft.size(); y++)
+		{
+			//At this point value is only >0 when there was no corresponding node 
+			double value = receivedFromLeft.get(y);
+			if (value <= 0)
+			{
+				Node newNode = new Node(value, y);
+				initializeNode(newNode);
+			}
+		}
 	}
 	
 	/**
