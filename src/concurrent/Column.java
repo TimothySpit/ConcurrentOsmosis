@@ -6,13 +6,12 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.concurrent.Exchanger;
 
-public class Column implements Runnable {
-	
-	private final int x;
-	public static int height;
-	public static int epsilon;
-	private GraphInfo ginfo;
-	private ConcOsmosis cosmosis;
+public class Column implements Runnable
+{
+    private final int x;
+    public static int height;
+    public static int epsilon;
+    private GraphInfo ginfo;
 	
 	private int stepsTotal;
 	private int stepsDone;
@@ -21,26 +20,26 @@ public class Column implements Runnable {
 	private Exchanger<ArrayList<Double>> rightExchanger;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int x_coord, int stepsTotal, ConcOsmosis cosmosis,GraphInfo ginfo, Exchanger<ArrayList<Double>> left, Exchanger<ArrayList<Double>> right) {
-		x = x_coord;
+	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<ArrayList<Double>> left, Exchanger<ArrayList<Double>> right)
+        {
+		x = xCoord;
 		this.ginfo = ginfo;
 		height = ginfo.height;
-		this.cosmosis = cosmosis;
 		stepsDone = 0;
 		leftExchanger = left;
 		rightExchanger = right;
 	}
 
 	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-
+	public void run()
+        {
+            
 	}
 	
-	/**
-     * Iterates through the column and exchanges values
-     * 
-     */
+        /**
+        * Iterates through the column and exchanges values
+        * 
+        */
 	public void performSteps()
 	{
 		while(stepsTotal < stepsDone)
@@ -154,10 +153,10 @@ public class Column implements Runnable {
 	}
 	
 	/**
-     * Gives an instance of node all four rates. 
-     * 
-     * @param node the node which gets rates
-     */
+         * Gives an instance of node all four rates. 
+         * 
+         * @param node the node which gets rates
+         */
 	synchronized void initializeNode(Node node)
 	{
 		int y = node.getY();
@@ -175,10 +174,10 @@ public class Column implements Runnable {
 	}
 	
 	/**
-     * Inserts a node in the list, list remains sorted by y-coordinates
-     * 
-     * @param node the node which gets inserted
-     */
+        * Inserts a node in the list, list remains sorted by y-coordinates
+        * 
+        * @param node the node which gets inserted
+        */
 	synchronized void insertNode(Node node)
 	{
 		int goalY = node.getY();

@@ -7,6 +7,8 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 import com.google.gson.Gson;
+import java.util.HashMap;
+import java.util.concurrent.Exchanger;
 
 public class ConcOsmosis {
 
@@ -26,9 +28,10 @@ public class ConcOsmosis {
 		Gson gson = new Gson();
 		String json = "";
                 
-                steps = originalSteps; // First step count is original step count
+                // First step count is original step count
+                steps = originalSteps;
                 
-		// read data in
+		// Read data in
 		if (args.length != 0)
                 {
                     Path path = Paths.get(args[1]);
@@ -47,10 +50,33 @@ public class ConcOsmosis {
                 height = ginfo.height;
                 epsilon = ginfo.epsilon;
                 
-                //Create first Node
+                // Get coordinates and value for first Node
                 Set<Integer> keys = ginfo.column2row2initialValue.keySet();
+                int column = keys.iterator().next();
+                HashMap<Integer, Double> valueMap = ginfo.column2row2initialValue.get(column);
+                Set<Integer> keys2 = valueMap.keySet();
+                int row = keys.iterator().next();
+                double value = valueMap.get(row);
                 
+                // Create first Node
+                // Only create necessary Exchangers
+                Exchanger left = null;
+                Exchanger right = null;
                 
+                if(column > 0) 
+                {left = new Exchanger();}
+                if(column < width)//TODO width - 1
+                {right = new Exchanger();}
+                
+                //Create the first entry and starts calcuating
+                Column start = new Column(column, steps, ginfo, left, right);
+                Node first = new Node(value, row);
+                start.initializeNode(first);
+                start.insertNode(first);
+                Thread t = new Thread(start);
+                t.start();
+                
+                //Plotting the whole thing
 		ImageConvertible graph = null;
 		ginfo.write2File("./result.txt", graph);
 	}
