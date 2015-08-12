@@ -29,7 +29,6 @@ public class Column implements Runnable
 		stepsDone = 0;
 		leftExchanger = left;
 		rightExchanger = right;
-		verticalConvergenceDetected = false;
 	}
 
 	@Override
@@ -44,6 +43,7 @@ public class Column implements Runnable
     */
 	public void performSteps()
 	{
+		verticalConvergenceDetected = false;
 		while(stepsTotal < stepsDone)
 		{
 			boolean verticalConvergencePossible = true;
