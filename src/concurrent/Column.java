@@ -1,6 +1,6 @@
 package concurrent;
 
-import java.util.ArrayList;
+import gnu.trove.list.array.TDoubleArrayList;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -17,11 +17,11 @@ public class Column implements Runnable
 	private int stepsTotal;
 	private int stepsDone;
 
-	private Exchanger<ArrayList<Double>> leftExchanger;
-	private Exchanger<ArrayList<Double>> rightExchanger;
+	private Exchanger<TDoubleArrayList> leftExchanger;
+	private Exchanger<TDoubleArrayList> rightExchanger;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<ArrayList<Double>> left, Exchanger<ArrayList<Double>> right)
+	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<TDoubleArrayList> left, Exchanger<TDoubleArrayList> right)
         {
 		x = xCoord;
 		this.ginfo = ginfo;
@@ -88,12 +88,12 @@ public class Column implements Runnable
      */
 	public void exchange()
 	{
-		ArrayList<Double> leftValues = null;
-		ArrayList<Double> rightValues = null;
+		TDoubleArrayList leftValues = null;
+		TDoubleArrayList rightValues = null;
 		if (!isLeftmost())
-			leftValues = new ArrayList<>(height);
+			leftValues = new TDoubleArrayList(height);
 		if (!isRightmost())
-			rightValues = new ArrayList<>(height);
+			rightValues = new TDoubleArrayList(height);
 		ListIterator<Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
@@ -107,8 +107,8 @@ public class Column implements Runnable
 				leftValues.set(currentNode.getY(), currentNode.emitRight());
 			}
 		}
-		ArrayList<Double> receivedFromLeft = null;
-		ArrayList<Double> receivedFromRight = null;
+		TDoubleArrayList receivedFromLeft = null;
+		TDoubleArrayList receivedFromRight = null;
 		
 		if(!isLeftmost())
 			try {
@@ -155,7 +155,7 @@ public class Column implements Runnable
 	 * 
 	 * @param TDoubleArrayList the double values that were received
 	 */
-	synchronized void receiveHorizontal(ArrayList<Double> received)
+	synchronized void receiveHorizontal(TDoubleArrayList received)
 	{
 		ListIterator <Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
