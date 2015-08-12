@@ -58,25 +58,43 @@ public class ConcOsmosis {
                 int row = keys.iterator().next();
                 double value = valueMap.get(row);
                 
-                // Create first Node
-                // Only create necessary Exchangers
+                //Create all Column
+                Thread t;
                 Exchanger left = null;
-                Exchanger right = null;
+                Exchanger right = new Exchanger();
+                for(int i = 0; i < column; i++)
+                {
+                    Column current = new Column(i, steps, ginfo, left, right);
+                    t = new Thread(current);
+                    t.start();
+                    left = right;
+                    right = new Exchanger();
+                }
                 
-                if(column > 0) 
-                {left = new Exchanger();}
-                if(column < width)//TODO width - 1
-                {right = new Exchanger();}
-                
-                //Create the first entry and starts calcuating
                 Column start = new Column(column, steps, ginfo, left, right);
                 Node first = new Node(value, row);
                 start.initializeNode(first);
                 start.insertNode(first);
-                Thread t = new Thread(start);
+                t = new Thread(start);
                 t.start();
                 
-                //Plotting the whole thing
+                left = right;
+                right = new Exchanger(); 
+                
+                for(int i = column + 1; i < width - 1; i++)
+                {
+                    Column current = new Column(i, steps, ginfo, left, right);
+                    t = new Thread(current);
+                    t.start();
+                    left = right;
+                    right = new Exchanger(); 
+                }
+                
+                left = right;
+                right = null;
+                Column last = new Column(width-1, steps, ginfo, left, right);
+                
+                // Plotting the whole thing
 		ImageConvertible graph = null;
 		ginfo.write2File("./result.txt", graph);
 	}
