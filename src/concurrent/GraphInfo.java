@@ -11,17 +11,19 @@ public class GraphInfo implements GuardedCommand {
 
 	public final int width;
 	public final int height;
+	public final double epsilon;
+	public final double maxOutflow;
 	private boolean allGuardsAdded = false;
 	public final HashMap<Integer, HashMap<Integer, Double>> column2row2initialValue = new HashMap<>();
-	// guards are simple equations of the form  gx <= x < gX /\ gy <= y < gY  :ax + by + c, where x and y are the coordinates and a, b
-	// and c are fixed constants
 	public final ArrayList<int[]> guards = new ArrayList<>();
 	public final ArrayList<double[]> commands = new ArrayList<>();
 
 	
-	public GraphInfo(final int width, final int height) {
+	public GraphInfo(final int width, final int height, final int epsilon, final double maxOutflow) {
 		this.width = width;
 		this.height = height;
+		this.epsilon = epsilon;
+		this.maxOutflow = maxOutflow;
 	}
 		
 	public void addInitialEntry(int row, int column, double value) {
@@ -31,11 +33,11 @@ public class GraphInfo implements GuardedCommand {
 	}
 	
 	// adds the guard from (x,y) to its neighbor if gx <= x < gX /\ gy <= y < gY with rate  a*xy + b*x + c*y + d
-	public void addGuard(int gx, int gX, int gy, int gY,  Neighbour neighbour, double a, double b, double c, double d) {
+	public void addGuard(int gx, int gX, int gy, int gY,  Neighbour neighbor, double a, double b, double c, double d) {
 		assert(!allGuardsAdded);
 		final int[] guard = new int[5];
 		final double[] command = new double[4];
-		guard[0] = neighbour.ordinal();		
+		guard[0] = neighbor.ordinal();		
 		guard[1] = gx;
 		guard[2] = gX;
 		guard[3] = gy;
@@ -99,12 +101,16 @@ public class GraphInfo implements GuardedCommand {
 			int[] guard = guards.get(i);
 			if (guard[0] == where.ordinal() &&
 				guard[1] <= x &&
-				x < guard[2] &&
+				x <= guard[2] &&
 				guard[3] <= y &&
-				y < guard[4]
+				y <= guard[4]
 			    ) {
 				double[] command = commands.get(i);
-				return command[0]*x*y + command[1]*x + command[2]*y + command[3];
+				final double rate = command[0]*x*y + command[1]*x + command[2]*y + command[3];
+				if (maxOutflow != 0.0)
+					return rate/maxOutflow;
+				else
+					return rate;
 			}
 		}
 		return 0;

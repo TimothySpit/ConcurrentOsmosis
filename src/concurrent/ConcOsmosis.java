@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 
 import com.google.gson.Gson;
-import java.util.Arrays;
-import java.util.Set;
 
 public class ConcOsmosis {
 

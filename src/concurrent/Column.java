@@ -1,6 +1,6 @@
 package concurrent;
 
-import gnu.trove.list.array.TDoubleArrayList;
+import java.util.ArrayList;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -17,11 +17,11 @@ public class Column implements Runnable {
 	private int stepsTotal;
 	private int stepsDone;
 
-	private Exchanger<TDoubleArrayList> leftExchanger;
-	private Exchanger<TDoubleArrayList> rightExchanger;
+	private Exchanger<ArrayList<Double>> leftExchanger;
+	private Exchanger<ArrayList<Double>> rightExchanger;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int x_coord, int stepsTotal, ConcOsmosis cosmosis,GraphInfo ginfo, Exchanger<TDoubleArrayList> left, Exchanger<TDoubleArrayList> right) {
+	public Column(int x_coord, int stepsTotal, ConcOsmosis cosmosis,GraphInfo ginfo, Exchanger<ArrayList<Double>> left, Exchanger<ArrayList<Double>> right) {
 		x = x_coord;
 		this.ginfo = ginfo;
 		height = ginfo.height;
@@ -76,12 +76,12 @@ public class Column implements Runnable {
      */
 	public void exchange()
 	{
-		TDoubleArrayList leftValues = null;
-		TDoubleArrayList rightValues = null;
+		ArrayList<Double> leftValues = null;
+		ArrayList<Double> rightValues = null;
 		if (!isLeftmost())
-			leftValues = new TDoubleArrayList(height, 0.0);
+			leftValues = new ArrayList<>(height);
 		if (!isRightmost())
-			rightValues = new TDoubleArrayList(height, 0.0);
+			rightValues = new ArrayList<>(height);
 		ListIterator<Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
@@ -98,7 +98,7 @@ public class Column implements Runnable {
 		
 		if(!isLeftmost())
 			try {
-				TDoubleArrayList receivedFromLeft = leftExchanger.exchange(leftValues);
+				ArrayList<Double> receivedFromLeft = leftExchanger.exchange(leftValues);
 				receiveVertical(receivedFromLeft);
 				
 				//TODO: Add convergence and stuff
@@ -129,7 +129,7 @@ public class Column implements Runnable {
 	 * 
 	 * @param TDoubleArrayList the double values that were received
 	 */
-	synchronized void receiveVertical(TDoubleArrayList receivedFromLeft)
+	synchronized void receiveVertical(ArrayList<Double> receivedFromLeft)
 	{
 		ListIterator <Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
@@ -138,7 +138,7 @@ public class Column implements Runnable {
 			Node currentNode = iterator.next();
 			int y = currentNode.getY();
 			currentNode.register(receivedFromLeft.get(y));
-			receivedFromLeft.set(y, 0);
+			receivedFromLeft.set(y, 0.0);
 		}
 		
 		for(int y=0; y< receivedFromLeft.size(); y++)
