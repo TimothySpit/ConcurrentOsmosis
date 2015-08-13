@@ -115,20 +115,20 @@ public class Column implements Runnable
 		ValueBundle receivedFromLeft = null;
 		ValueBundle receivedFromRight = null;
 		int convergencesUntilHere = 0;
-		int currentMaxSteps = 0;
+		int currentSteps = 0;
 		
 		if(!isLeftmost())
 			try {
 				receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues, 0, 0));
 				convergencesUntilHere = receivedFromLeft.getConvergents();
-				currentMaxSteps = receivedFromLeft.getCurrentMaxSteps();
+				currentSteps = receivedFromLeft.getCurrentSteps();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		
 		else
 		{
-			currentMaxSteps = 1234; //TODO: Get actual value from PseudoColumn
+			currentSteps = 1234; //TODO: Get actual value from PseudoColumn
 			//TODO: The leftmost column is about to exchange to the right
 		}
 		if (columnConvergenceDetected)
@@ -136,7 +136,7 @@ public class Column implements Runnable
 		
 		if(!isRightmost())
 			try {
-				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, convergencesUntilHere, currentMaxSteps));
+				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, convergencesUntilHere, currentSteps));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
