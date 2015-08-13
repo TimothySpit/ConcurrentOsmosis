@@ -13,15 +13,16 @@ public class Column implements Runnable
     public static int epsilon;
     private GraphInfo ginfo;
     private boolean verticalConvergenceDetected;
+    private boolean columnConvergenceDetected;
 	
 	private int stepsTotal;
 	private int stepsDone;
 
-	private Exchanger<TDoubleArrayList> leftExchanger;
-	private Exchanger<TDoubleArrayList> rightExchanger;
+	private Exchanger<ValueBundle> leftExchanger;
+	private Exchanger<ValueBundle> rightExchanger;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<TDoubleArrayList> left, Exchanger<TDoubleArrayList> right)
+	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<ValueBundle> left, Exchanger<ValueBundle> right)
         {
 		x = xCoord;
 		this.ginfo = ginfo;
@@ -89,8 +90,11 @@ public class Column implements Runnable
      */
 	public void exchange()
 	{
+		ValueBundle leftVB;
+		ValueBundle rightVB;
 		TDoubleArrayList leftValues = null;
 		TDoubleArrayList rightValues = null;
+		
 		if (!isLeftmost())
 			leftValues = new TDoubleArrayList(height);
 		if (!isRightmost())
@@ -108,35 +112,44 @@ public class Column implements Runnable
 				leftValues.set(currentNode.getY(), currentNode.emitRight());
 			}
 		}
-		TDoubleArrayList receivedFromLeft = null;
-		TDoubleArrayList receivedFromRight = null;
+		ValueBundle receivedFromLeft = null;
+		ValueBundle receivedFromRight = null;
+		int convergencesUntilHere = 0;
+		int currentMaxSteps = 0;
 		
 		if(!isLeftmost())
 			try {
-				receivedFromLeft = leftExchanger.exchange(leftValues);
-				receiveHorizontal(receivedFromLeft);
+				receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues, 0, 0));
+				convergencesUntilHere = receivedFromLeft.getConvergents();
+				currentMaxSteps = receivedFromLeft.getCurrentMaxSteps();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		
 		else
 		{
+			currentMaxSteps = 1234; //TODO: Get actual value from PseudoColumn
 			//TODO: The leftmost column is about to exchange to the right
 		}
+		if (columnConvergenceDetected)
+			convergencesUntilHere++;
+		
 		if(!isRightmost())
 			try {
-				receivedFromRight = rightExchanger.exchange(rightValues);
+				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, convergencesUntilHere, currentMaxSteps));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		else
 		{
+			//TODO: Talk with Pseudocolumn
 			//TODO: Everyone just passed all their horizontal values
 		}
 		boolean horizontalConvergencePossible = true;
 		if(!isLeftmost())
-			receiveHorizontal(receivedFromLeft);
+			receiveHorizontal(receivedFromLeft.getValues());
 		if(!isRightmost())
-			receiveHorizontal(receivedFromRight);
+			receiveHorizontal(receivedFromRight.getValues());
 		iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
@@ -144,9 +157,9 @@ public class Column implements Runnable
 			if (!currentNode.flush())
 				horizontalConvergencePossible = false;
 		}
-		if (horizontalConvergencePossible && verticalConvergenceDetected)
+		if (!nodeList.isEmpty() && horizontalConvergencePossible && verticalConvergenceDetected)
 		{
-			//TODO: My whole column is convergent and exchanges are convergent too! What now?
+			columnConvergenceDetected = true;
 		}
 	}
 	
