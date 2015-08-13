@@ -67,15 +67,15 @@ public class Column implements Runnable
 				Node next = currentNode.updateNext();
 				if (previous != null)
 				{
-					initializeNode(previous);
 					iterator.previous();
 					iterator.add(previous);
 					iterator.next();
+					initializeNode(previous);
 				}
 				if (next != null)
 				{
-					initializeNode(next);
 					iterator.add(next);
+					initializeNode(next);
 				}
 			}
 			iterator = nodeList.listIterator();
@@ -214,27 +214,32 @@ public class Column implements Runnable
          */
 	public synchronized void initializeNode(Node node)
 	{
+		
+		
 		int y = node.getY();
 		
+		
+		//TODO: more efficient next/previous finds
 		ListIterator <Node> iterator = nodeList.listIterator();
-		while(iterator.next() != node)
+		boolean donePrevious = false;
+		boolean doneNext = false;
+		while(!(donePrevious && doneNext) && iterator.hasNext())
 		{
+			Node currentNode = iterator.next();
+			if (!donePrevious && currentNode.getY() == y - 1)
+			{
+				currentNode.setNext(node);
+				node.setPrevious(currentNode);
+				donePrevious = true;
+			}
+			if (!doneNext && currentNode.getY() == y + 1)
+			{
+				node.setNext(currentNode);
+				currentNode.setPrevious(node);
+				doneNext = true;
+			}
 		}
-		
-		Node previous= iterator.previous();
-		if (previous.getY() == y - 1)
-			{
-			previous.setNext(node);
-			node.setPrevious(previous);
-			}
-		iterator.next();
-		Node next = iterator.next();
-		if (next.getY() == y + 1)
-			{
-			next.setPrevious(node);
-			node.setNext(node);
-			}
-		
+
 		double rate = ginfo.getRateForTarget(x, y, Neighbour.Left);
 		node.setRate(Neighbour.Left, rate);
 		
