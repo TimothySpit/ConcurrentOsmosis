@@ -38,7 +38,7 @@ public class PseudoColumn
     {
         private Exchanger<ValueBundle> exchanger;
         
-        public LeftListener(Exchanger ex)
+        public LeftListener(Exchanger<ValueBundle> ex)
         {
             exchanger = ex;
         }
@@ -66,7 +66,7 @@ public class PseudoColumn
     {
         private Exchanger<ValueBundle> exchanger;
         
-        public RightPasser(Exchanger ex)
+        public RightPasser(Exchanger<ValueBundle> ex)
         {
             exchanger = ex;
         }
