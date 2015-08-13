@@ -1,6 +1,6 @@
 package concurrent;
 
-import gnu.trove.list.array.TDoubleArrayList;
+import java.util.ArrayList;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -17,11 +17,11 @@ public class Column implements Runnable
 	private int stepsTotal;
 	private int stepsDone;
 
-	private Exchanger<TDoubleArrayList> leftExchanger;
-	private Exchanger<TDoubleArrayList> rightExchanger;
+	private Exchanger<ArrayList<Double>> leftExchanger;
+	private Exchanger<ArrayList<Double>> rightExchanger;
 	private LinkedList<Node> nodeList;
 	
-	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<TDoubleArrayList> left, Exchanger<TDoubleArrayList> right)
+	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<ArrayList<Double>> left, Exchanger<ArrayList<Double>> right)
         {
 		x = xCoord;
 		this.ginfo = ginfo;
@@ -29,7 +29,6 @@ public class Column implements Runnable
 		stepsDone = 0;
 		leftExchanger = left;
 		rightExchanger = right;
-		verticalConvergenceDetected = false;
 	}
 
 	@Override
@@ -44,6 +43,7 @@ public class Column implements Runnable
     */
 	public void performSteps()
 	{
+		verticalConvergenceDetected = false;
 		while(stepsTotal < stepsDone)
 		{
 			boolean verticalConvergencePossible = true;
@@ -76,11 +76,12 @@ public class Column implements Runnable
 			if (verticalConvergencePossible)
 			{
 				verticalConvergenceDetected = true;
-				//TODO: All future steps until stepsDone
+				//TODO: All future steps until stepsDone could be skipped
 			}
 				
 			stepsDone ++;
 		}
+		exchange();
 	}
 	
 	/**
@@ -88,12 +89,12 @@ public class Column implements Runnable
      */
 	public void exchange()
 	{
-		TDoubleArrayList leftValues = null;
-		TDoubleArrayList rightValues = null;
+		ArrayList<Double> leftValues = null;
+		ArrayList<Double> rightValues = null;
 		if (!isLeftmost())
-			leftValues = new TDoubleArrayList(height);
+			leftValues = new ArrayList<>(height);
 		if (!isRightmost())
-			rightValues = new TDoubleArrayList(height);
+			rightValues = new ArrayList<>(height);
 		ListIterator<Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
@@ -107,15 +108,13 @@ public class Column implements Runnable
 				leftValues.set(currentNode.getY(), currentNode.emitRight());
 			}
 		}
-		TDoubleArrayList receivedFromLeft = null;
-		TDoubleArrayList receivedFromRight = null;
+		ArrayList<Double> receivedFromLeft = null;
+		ArrayList<Double> receivedFromRight = null;
 		
 		if(!isLeftmost())
 			try {
 				receivedFromLeft = leftExchanger.exchange(leftValues);
 				receiveHorizontal(receivedFromLeft);
-				
-				//TODO: Add convergence and stuff
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -126,7 +125,6 @@ public class Column implements Runnable
 		if(!isRightmost())
 			try {
 				receivedFromRight = rightExchanger.exchange(rightValues);
-				//TODO: Add using convergence and stuff
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -146,7 +144,10 @@ public class Column implements Runnable
 			if (!currentNode.flush())
 				horizontalConvergencePossible = false;
 		}
-		
+		if (horizontalConvergencePossible && verticalConvergenceDetected)
+		{
+			//TODO: My whole column is convergent and exchanges are convergent too! What now?
+		}
 	}
 	
 	/**
@@ -155,7 +156,7 @@ public class Column implements Runnable
 	 * 
 	 * @param TDoubleArrayList the double values that were received
 	 */
-	synchronized void receiveHorizontal(TDoubleArrayList received)
+	synchronized void receiveHorizontal(ArrayList<Double> received)
 	{
 		ListIterator <Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
