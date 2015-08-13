@@ -100,6 +100,12 @@ public class ConcOsmosis
                 right = leftExchanger;
                 Column last = new Column(width-1, STEPS, ginfo, left, right);
                 
+                // Start passers
+                Thread rt = new Thread(rightPasser);
+                Thread lt = new Thread(leftPasser);
+                rt.start();
+                lt.start();
+                
                 // Plotting the whole thing
 		ImageConvertible graph = null;
 		ginfo.write2File("./result.txt", graph);
