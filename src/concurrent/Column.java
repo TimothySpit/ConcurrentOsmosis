@@ -157,19 +157,23 @@ public class Column implements Runnable
 			if (!currentNode.flush())
 				horizontalConvergencePossible = false;
 		}
+		columnConvergenceDetected = true;
 		if (!nodeList.isEmpty() && horizontalConvergencePossible && verticalConvergenceDetected)
 		{
 			columnConvergenceDetected = true;
 		}
+		stepsDone = 0;
+		stepsTotal = currentSteps;
+		performSteps();
 	}
 	
 	/**
 	 * Updates all nodes (and creates new ones if needed)
-	 * with values emitted from the column on the left to this one
+	 * with values from another column
 	 * 
 	 * @param TDoubleArrayList the double values that were received
 	 */
-	synchronized void receiveHorizontal(TDoubleArrayList received)
+	private synchronized void receiveHorizontal(TDoubleArrayList received)
 	{
 		ListIterator <Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
@@ -198,7 +202,7 @@ public class Column implements Runnable
          * 
          * @param node the node which gets rates
          */
-	synchronized void initializeNode(Node node)
+	public synchronized void initializeNode(Node node)
 	{
 		int y = node.getY();
 		double rate = ginfo.getRateForTarget(x, y, Neighbour.Left);
@@ -219,7 +223,7 @@ public class Column implements Runnable
         * 
         * @param node the node which gets inserted
         */
-	synchronized void insertNode(Node node)
+	public synchronized void insertNode(Node node)
 	{
 		int goalY = node.getY();
 		ListIterator<Node> iterator = nodeList.listIterator();
@@ -241,7 +245,7 @@ public class Column implements Runnable
 		return (x == 0);
 	}
 
-	public boolean isRightmost()
+	public synchronized boolean isRightmost()
 	{
 		return (x == ginfo.width-1);
 	}
