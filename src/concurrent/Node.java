@@ -100,6 +100,7 @@ public class Node
             if(previous == null)
             {
                 previous = new Node(pass, y-1);
+                previous.next = this;
                 return previous;
             }
             previous.register(pass);
@@ -124,6 +125,7 @@ public class Node
             if(next == null)
             {
                 next = new Node(pass, y+1);
+                next.previous = this;
                 return next;
             }
             next.register(pass);
@@ -178,4 +180,20 @@ public class Node
     {
     	return "Y-Coordinate: " + y + "; Value: "+ value;
     }
+
+	public Node getPrevious() {
+		return previous;
+	}
+
+	public void setPrevious(Node previous) {
+		this.previous = previous;
+	}
+
+	public Node getNext() {
+		return next;
+	}
+
+	public void setNext(Node next) {
+		this.next = next;
+	}
 }

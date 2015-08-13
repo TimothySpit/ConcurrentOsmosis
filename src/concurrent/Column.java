@@ -141,8 +141,12 @@ public class Column implements Runnable
 				e.printStackTrace();
 			}
 		
-		if (columnConvergenceDetected)
+		//if (columnConvergenceDetected)
+		if (verticalConvergenceDetected)
+		{
 			convergencesUntilHere++;
+		}
+			
 		
 		//if(!isRightmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
@@ -205,12 +209,32 @@ public class Column implements Runnable
 	
 	/**
          * Gives an instance of node all four rates. 
-         * 
+         * Updates next and previous of the node, if existing.
          * @param node the node which gets rates
          */
 	public synchronized void initializeNode(Node node)
 	{
 		int y = node.getY();
+		
+		ListIterator <Node> iterator = nodeList.listIterator();
+		while(iterator.next() != node)
+		{
+		}
+		
+		Node previous= iterator.previous();
+		if (previous.getY() == y - 1)
+			{
+			previous.setNext(node);
+			node.setPrevious(previous);
+			}
+		iterator.next();
+		Node next = iterator.next();
+		if (next.getY() == y + 1)
+			{
+			next.setPrevious(node);
+			node.setNext(node);
+			}
+		
 		double rate = ginfo.getRateForTarget(x, y, Neighbour.Left);
 		node.setRate(Neighbour.Left, rate);
 		
@@ -241,6 +265,7 @@ public class Column implements Runnable
 			{
 				index ++;
 			}
+			//tell other nodes
 		}
 		nodeList.add(index, node);
 		initializeNode(node);
