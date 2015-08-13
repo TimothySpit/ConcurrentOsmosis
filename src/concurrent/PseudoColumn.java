@@ -30,6 +30,7 @@ public class PseudoColumn
     public PseudoColumn(int maxSteps, int columnCount)
     {
         this.maxSteps = maxSteps;
+        this.steps = maxSteps;
         this.columnCount = columnCount;
     }
     
@@ -153,6 +154,8 @@ public class PseudoColumn
                     int steps = getSteps();
                     ValueBundle bundle = new ValueBundle(steps);
                     exchanger.exchange(bundle);
+                    if(steps > 1)
+                    {System.out.println("PseudoColumn says now " + steps);}
                     if(steps==0){Thread.currentThread().interrupt();}
                 }
             }

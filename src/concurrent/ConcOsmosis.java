@@ -92,7 +92,7 @@ public class ConcOsmosis
                 left = right;
                 right = new Exchanger<>(); 
                 
-                for(int i = column + 1; i < width - 1; i++)
+                for(int i = column + 1; i < width-1; i++)
                 {
                     Column current = new Column(i, STEPS, ginfo, left, right);
                     columns[i] = current;
@@ -102,10 +102,11 @@ public class ConcOsmosis
                     right = new Exchanger<>(); 
                 }
                 
-                left = right;
                 right = leftExchanger;
                 Column last = new Column(width-1, STEPS, ginfo, left, right);
                 columns[width-1] = last;
+                t = new Thread(last);
+                t.start();
                 
                 // Start passers
                 Thread rt = new Thread(rightPasser);

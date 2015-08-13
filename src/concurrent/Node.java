@@ -172,4 +172,10 @@ public class Node
         change = 0.0;
         return result;
     }
+    
+    @Override
+    public String toString()
+    {
+    	return "Y-Coordinate: " + y + "; Value: "+ value;
+    }
 }

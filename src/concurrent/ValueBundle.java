@@ -17,7 +17,7 @@ public class ValueBundle
         
         public ValueBundle(int currentSteps)
         {
-            this(null, -1, currentSteps);   
+            this(null, 0, currentSteps);   
         }
 	
 	public TDoubleArrayList getValues()

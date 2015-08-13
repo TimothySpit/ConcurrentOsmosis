@@ -36,10 +36,15 @@ public class Column implements Runnable
 	@Override
 	public void run()
         {
+		int happenedExchanges = 0;
         while(!Thread.interrupted())
         {
         	performSteps();
         	exchange();
+        	happenedExchanges++;
+        	//System.out.println("Exchanges here at " + x + " : " + happenedExchanges);
+        	//if(!nodeList.isEmpty())
+        	//System.out.println("X-Coordinate: "+x + "; "+ nodeList.getFirst().toString());
         	stepsDone = 0;
         }
         }
@@ -85,7 +90,6 @@ public class Column implements Runnable
 				verticalConvergenceDetected = true;
 				//TODO: All future steps until stepsDone could be skipped
 			}
-				
 			stepsDone ++;
 		}
 	}
