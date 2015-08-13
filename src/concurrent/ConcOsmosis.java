@@ -10,28 +10,20 @@ import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.concurrent.Exchanger;
 
-public class ConcOsmosis {
-
-        private static final int originalSteps = 100;
-        public static int steps;
-        
+public class ConcOsmosis
+{
         private static Column[] columns;
         
         public static double epsilon;
         
-        // Parameter for convergence
-        private static int notifications = 0;
-        private static int posnot = 0;
-        
         private static int width, height;
+        
+        private final static int STEPS = 100;
     
 	public static void main(String[] args) throws IOException, InterruptedException
         {
 		Gson gson = new Gson();
 		String json = "";
-                
-                // First step count is original step count
-                steps = originalSteps;
                 
 		// Read data in
 		if (args.length != 0)
@@ -39,8 +31,7 @@ public class ConcOsmosis {
                     Path path = Paths.get(args[1]);
                     try
                     {json = new String(Files.readAllBytes(path));}
-                    catch (IOException e)
-                    {e.printStackTrace();}
+                    catch (IOException e){/* Do Nothing */}
 		}
                 else
                 {System.err.println("You must provide the serialized file as the first argument!");}
@@ -52,6 +43,16 @@ public class ConcOsmosis {
                 height = ginfo.height;
                 epsilon = ginfo.epsilon;
                 
+                columns = new Column[width];
+                
+                // Create step-mediator
+                PseudoColumn mediator = new PseudoColumn(STEPS);
+                Exchanger<ValueBundle> rightExchanger = new Exchanger<>();
+                Exchanger<ValueBundle> leftExchanger = new Exchanger<>();
+                
+                PseudoColumn.LeftListener leftPasser = mediator.new LeftListener(leftExchanger);
+                PseudoColumn.RightPasser rightPasser = mediator.new RightPasser(rightExchanger);
+                
                 // Get coordinates and value for first Node
                 Set<Integer> keys = ginfo.column2row2initialValue.keySet();
                 int column = keys.iterator().next();
@@ -62,18 +63,20 @@ public class ConcOsmosis {
                 
                 //Create all Column
                 Thread t;
-                Exchanger left = null;
-                Exchanger right = new Exchanger();
+                Exchanger<ValueBundle> left = rightExchanger;
+                Exchanger<ValueBundle> right = new Exchanger<>();
                 for(int i = 0; i < column; i++)
                 {
-                    Column current = new Column(i, steps, ginfo, left, right);
+                    Column current = new Column(i, STEPS, ginfo, left, right);
+                    columns[i] = current;
                     t = new Thread(current);
                     t.start();
                     left = right;
-                    right = new Exchanger();
+                    right = new Exchanger<>();
                 }
                 
-                Column start = new Column(column, steps, ginfo, left, right);
+                Column start = new Column(column, STEPS, ginfo, left, right);
+                columns[column] = start;
                 Node first = new Node(value, row);
                 start.initializeNode(first);
                 start.insertNode(first);
@@ -81,41 +84,24 @@ public class ConcOsmosis {
                 t.start();
                 
                 left = right;
-                right = new Exchanger(); 
+                right = new Exchanger<>(); 
                 
                 for(int i = column + 1; i < width - 1; i++)
                 {
-                    Column current = new Column(i, steps, ginfo, left, right);
+                    Column current = new Column(i, STEPS, ginfo, left, right);
+                    columns[i] = current;
                     t = new Thread(current);
                     t.start();
                     left = right;
-                    right = new Exchanger(); 
+                    right = new Exchanger<>(); 
                 }
                 
                 left = right;
-                right = null;
-                Column last = new Column(width-1, steps, ginfo, left, right);
+                right = leftExchanger;
+                Column last = new Column(width-1, STEPS, ginfo, left, right);
                 
                 // Plotting the whole thing
 		ImageConvertible graph = null;
 		ginfo.write2File("./result.txt", graph);
 	}
-        
-        public static synchronized void checkForConvergence(int column, boolean converges)
-        {
-            notifications++;
-            if(converges){posnot++;}
-            if(notifications == width)
-            {
-                if(posnot > 0)
-                {
-                    steps /= 2;
-                }
-                else if(posnot == 0 && steps < originalSteps)
-                {
-                    steps *= 2;
-                }
-                notifications = 0;
-            }
-        }
 }
