@@ -85,7 +85,7 @@ public class PseudoColumn
          * 
          * @param ex the Exchanger with which this column comunicates with the last column
          */
-        public LeftListener(Exchanger ex)
+        public LeftListener(Exchanger<ValueBundle> ex)
         {
             exchanger = ex;
         }
@@ -124,11 +124,11 @@ public class PseudoColumn
         private final Exchanger<ValueBundle> exchanger;
         
         /**
-         * Creates a comunicator for the first column
+         * Creates a communicator for the first column
          * 
-         * @param ex the Exchanger with which this column comunicates with the first column
+         * @param ex the Exchanger with which this column comunicates with the last column
          */
-        public RightPasser(Exchanger ex)
+        public RightPasser(Exchanger<ValueBundle> ex)
         {
             exchanger = ex;
         }

@@ -35,11 +35,16 @@ public class Column implements Runnable
 	@Override
 	public void run()
         {
-            
+        while(!Thread.interrupted())
+        {
+        	performSteps();
+        	exchange();
+        	stepsDone = 0;
+        }
         }
 	
     /**
-    * Iterates through the column and exchanges values
+    * Iterates through the column
     * 
     */
 	public void performSteps()
@@ -82,7 +87,6 @@ public class Column implements Runnable
 				
 			stepsDone ++;
 		}
-		exchange();
 	}
 	
 	/**
@@ -90,8 +94,6 @@ public class Column implements Runnable
      */
 	public void exchange()
 	{
-		ValueBundle leftVB;
-		ValueBundle rightVB;
 		TDoubleArrayList leftValues = null;
 		TDoubleArrayList rightValues = null;
 		
@@ -115,9 +117,9 @@ public class Column implements Runnable
 		ValueBundle receivedFromLeft = null;
 		ValueBundle receivedFromRight = null;
 		int convergencesUntilHere = 0;
-		int currentSteps = 0;
+		int currentSteps = 1;
 		
-		if(!isLeftmost())
+		//if(!isLeftmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
 				receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues, 0, 0));
 				convergencesUntilHere = receivedFromLeft.getConvergents();
@@ -126,25 +128,18 @@ public class Column implements Runnable
 				e.printStackTrace();
 			}
 		
-		else
-		{
-			currentSteps = 1234; //TODO: Get actual value from PseudoColumn
-			//TODO: The leftmost column is about to exchange to the right
-		}
 		if (columnConvergenceDetected)
 			convergencesUntilHere++;
 		
-		if(!isRightmost())
+		//if(!isRightmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
 				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, convergencesUntilHere, currentSteps));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		else
-		{
-			//TODO: Talk with Pseudocolumn
-			//TODO: Everyone just passed all their horizontal values
-		}
+
+		if (currentSteps == 0)
+			Thread.currentThread().interrupt();
 		boolean horizontalConvergencePossible = true;
 		if(!isLeftmost())
 			receiveHorizontal(receivedFromLeft.getValues());
@@ -157,14 +152,12 @@ public class Column implements Runnable
 			if (!currentNode.flush())
 				horizontalConvergencePossible = false;
 		}
-		columnConvergenceDetected = true;
+		columnConvergenceDetected = false;
 		if (!nodeList.isEmpty() && horizontalConvergencePossible && verticalConvergenceDetected)
 		{
 			columnConvergenceDetected = true;
 		}
-		stepsDone = 0;
 		stepsTotal = currentSteps;
-		performSteps();
 	}
 	
 	/**
@@ -248,5 +241,17 @@ public class Column implements Runnable
 	public synchronized boolean isRightmost()
 	{
 		return (x == ginfo.width-1);
+	}
+	
+	public TDoubleArrayList getNodeValues()
+	{
+		TDoubleArrayList values = new TDoubleArrayList(height);
+		ListIterator<Node> iterator = nodeList.listIterator();
+		while (iterator.hasNext())
+		{
+			Node currentNode = iterator.next();
+			values.set(currentNode.getY(), currentNode.getValue());
+		}
+		return values;
 	}
 }
