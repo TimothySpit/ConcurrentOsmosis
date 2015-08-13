@@ -15,6 +15,8 @@ public class ConcOsmosis {
         private static final int originalSteps = 100;
         public static int steps;
         
+        private static Column[] columns;
+        
         public static double epsilon;
         
         // Parameter for convergence
