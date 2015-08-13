@@ -154,7 +154,7 @@ public class PseudoColumn
                     int steps = getSteps();
                     ValueBundle bundle = new ValueBundle(steps);
                     exchanger.exchange(bundle);
-                    if(steps > 1)
+                    if(steps < 100)
                     {System.out.println("PseudoColumn says now " + steps);}
                     if(steps==0){Thread.currentThread().interrupt();}
                 }
