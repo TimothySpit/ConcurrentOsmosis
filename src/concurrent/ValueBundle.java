@@ -2,29 +2,36 @@ package concurrent;
 
 import gnu.trove.list.array.TDoubleArrayList;
 
-public class ValueBundle {
-	TDoubleArrayList values;
-	int convergents = 0;
-	int currentMaxSteps;
+public class ValueBundle
+{
+	private TDoubleArrayList values;
+	private int convergents = 0;
+	private int currentSteps;
 	
-	public ValueBundle(TDoubleArrayList values, int convergents, int currentMaxSteps) {
-		this.values = values;
-		this.currentMaxSteps = currentMaxSteps;
-		this.convergents = convergents;
+	public ValueBundle(TDoubleArrayList values, int convergents, int currentSteps)
+        {
+            this.values = values;
+            this.currentSteps = currentSteps;
+            this.convergents = convergents;
 	}
+        
+        public ValueBundle(int currentSteps)
+        {
+            this(null, -1, currentSteps);   
+        }
 	
 	public TDoubleArrayList getValues()
 	{
-		return values;
+            return values;
 	}
 	
 	public int getConvergents()
 	{
-		return convergents;
+            return convergents;
 	}
 	
-	public int getCurrentMaxSteps()
+	public int getCurrentSteps()
 	{
-		return currentMaxSteps;
+            return currentSteps;
 	}
 }
