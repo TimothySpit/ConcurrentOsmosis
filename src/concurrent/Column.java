@@ -117,7 +117,7 @@ public class Column implements Runnable
 		ValueBundle receivedFromLeft = null;
 		ValueBundle receivedFromRight = null;
 		int convergencesUntilHere = 0;
-		int currentSteps = 0;
+		int currentSteps = 1;
 		
 		//if(!isLeftmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
@@ -138,6 +138,8 @@ public class Column implements Runnable
 				e.printStackTrace();
 			}
 
+		if (currentSteps == 0)
+			Thread.currentThread().interrupt();
 		boolean horizontalConvergencePossible = true;
 		if(!isLeftmost())
 			receiveHorizontal(receivedFromLeft.getValues());
@@ -150,7 +152,7 @@ public class Column implements Runnable
 			if (!currentNode.flush())
 				horizontalConvergencePossible = false;
 		}
-		columnConvergenceDetected = true;
+		columnConvergenceDetected = false;
 		if (!nodeList.isEmpty() && horizontalConvergencePossible && verticalConvergenceDetected)
 		{
 			columnConvergenceDetected = true;
@@ -239,5 +241,17 @@ public class Column implements Runnable
 	public synchronized boolean isRightmost()
 	{
 		return (x == ginfo.width-1);
+	}
+	
+	public TDoubleArrayList getNodeValues()
+	{
+		TDoubleArrayList values = new TDoubleArrayList(height);
+		ListIterator<Node> iterator = nodeList.listIterator();
+		while (iterator.hasNext())
+		{
+			Node currentNode = iterator.next();
+			values.set(currentNode.getY(), currentNode.getValue());
+		}
+		return values;
 	}
 }
