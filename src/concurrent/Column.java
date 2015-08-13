@@ -30,6 +30,7 @@ public class Column implements Runnable
 		stepsDone = 0;
 		leftExchanger = left;
 		rightExchanger = right;
+		nodeList = new LinkedList<>();
 	}
 
 	@Override

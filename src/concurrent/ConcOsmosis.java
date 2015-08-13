@@ -35,7 +35,7 @@ public class ConcOsmosis
 		// Read data in
 		if (args.length != 0)
                 {
-                    Path path = Paths.get(args[1]);
+                    Path path = Paths.get(args[0]);
                     try
                     {json = new String(Files.readAllBytes(path));}
                     catch (IOException e){/* Do Nothing */}
@@ -45,7 +45,6 @@ public class ConcOsmosis
                 
                 // Get info to work on
 		GraphInfo ginfo = gson.fromJson(json, GraphInfo.class);
-                
                 width = ginfo.width;
                 height = ginfo.height;
                 epsilon = ginfo.epsilon;
