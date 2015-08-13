@@ -99,9 +99,17 @@ public class Column implements Runnable
 		TDoubleArrayList rightValues = null;
 		
 		if (!isLeftmost())
+		{
 			leftValues = new TDoubleArrayList(height);
+			leftValues.fill(0, height - 1,0.0);
+		}
+			
 		if (!isRightmost())
-			rightValues = new TDoubleArrayList(height);
+		{
+			rightValues = new TDoubleArrayList(height, 0.0);
+			rightValues.fill(0, height - 1,0.0);
+		}
+			
 		ListIterator<Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
@@ -183,7 +191,7 @@ public class Column implements Runnable
 		{
 			//At this point value is only >0 when there was no corresponding node 
 			double value = received.get(y);
-			if (value <= 0)
+			if (value <= 0.0)
 			{
 				Node newNode = new Node(value, y);
 				initializeNode(newNode);
@@ -247,6 +255,7 @@ public class Column implements Runnable
 	public TDoubleArrayList getNodeValues()
 	{
 		TDoubleArrayList values = new TDoubleArrayList(height);
+		values.fill(0, height, 0.0);
 		ListIterator<Node> iterator = nodeList.listIterator();
 		while (iterator.hasNext())
 		{

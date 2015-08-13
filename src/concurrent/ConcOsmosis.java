@@ -117,7 +117,6 @@ public class ConcOsmosis
                 LOCK.lock();
                 while(!terminated)
                 {
-                    LOCK.unlock();
                     CONDITION.await();
                     LOCK.lock();
                 }
