@@ -92,6 +92,8 @@ public class PseudoColumn
         
         /**
          * Run method for Threads. It mainly recognizes convergence.
+         * This Method is very important for termination. The last exchange after all columns
+         * terminated invokes the plotting.
          */
         @Override
         public void run()
@@ -109,6 +111,11 @@ public class PseudoColumn
                     else
                     {signalTermination(); Thread.currentThread().interrupt();}
                 }
+                exchanger.exchange(null);
+                ConcOsmosis.LOCK.lock();
+                ConcOsmosis.terminated = true;
+                ConcOsmosis.LOCK.unlock();
+                ConcOsmosis.CONDITION.signal();
             }
             catch(InterruptedException e){/* Do Nothing*/}
         }

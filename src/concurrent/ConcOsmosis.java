@@ -9,6 +9,8 @@ import java.util.Set;
 import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.concurrent.Exchanger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ConcOsmosis
 {
@@ -19,6 +21,11 @@ public class ConcOsmosis
         private static int width, height;
         
         private final static int STEPS = 100;
+        
+        
+        public static boolean terminated;
+        public static final ReentrantLock LOCK = new ReentrantLock();
+        public static final Condition CONDITION = LOCK.newCondition();
     
 	public static void main(String[] args) throws IOException, InterruptedException
         {
@@ -107,19 +114,28 @@ public class ConcOsmosis
                 rt.start();
                 lt.start();
                 
+                // Waiting for termination
+                LOCK.lock();
+                while(!terminated)
+                {
+                    LOCK.unlock();
+                    CONDITION.await();
+                    LOCK.lock();
+                }
+                LOCK.unlock();
+                
                 // Plotting the whole thing
-		ImageConvertible graph = null;
+		ImageConvertible graph = new Converter();
 		ginfo.write2File("./result.txt", graph);
 	}
         
-        private class Converter implements ImageConvertible
+        private static class Converter implements ImageConvertible
         {
 
             @Override
             public double getValueAt(int column, int row)
             {
-                //return columns[column];
-                return 0.0;
+                return columns[column].getNodeValues().get(row);
             }
         }
 }
