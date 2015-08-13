@@ -124,7 +124,7 @@ public class PseudoColumn
         private final Exchanger<ValueBundle> exchanger;
         
         /**
-         * Creates a communicator for the first column
+         * Creates a communicator for the first column.
          * 
          * @param ex the Exchanger with which this column comunicates with the last column
          */
