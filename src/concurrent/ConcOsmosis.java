@@ -46,7 +46,7 @@ public class ConcOsmosis
                 columns = new Column[width];
                 
                 // Create step-mediator
-                PseudoColumn mediator = new PseudoColumn(STEPS);
+                PseudoColumn mediator = new PseudoColumn(STEPS, width);
                 Exchanger<ValueBundle> rightExchanger = new Exchanger<>();
                 Exchanger<ValueBundle> leftExchanger = new Exchanger<>();
                 
@@ -99,6 +99,7 @@ public class ConcOsmosis
                 left = right;
                 right = leftExchanger;
                 Column last = new Column(width-1, STEPS, ginfo, left, right);
+                columns[width-1] = last;
                 
                 // Start passers
                 Thread rt = new Thread(rightPasser);
@@ -110,4 +111,15 @@ public class ConcOsmosis
 		ImageConvertible graph = null;
 		ginfo.write2File("./result.txt", graph);
 	}
+        
+        private class Converter implements ImageConvertible
+        {
+
+            @Override
+            public double getValueAt(int column, int row)
+            {
+                //return columns[column];
+                return 0.0;
+            }
+        }
 }
