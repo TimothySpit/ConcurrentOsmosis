@@ -114,7 +114,7 @@ public class ConcOsmosis
                     LOCK.lock();
                 }
                 LOCK.unlock();
-                System.out.println("Ende im Gelände!");
+                System.out.println("Ende im Gelaende!");
                 
                 // Plotting the whole thing
 		ImageConvertible graph = new Converter();

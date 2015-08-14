@@ -106,6 +106,7 @@ public class PseudoColumn
             {
                 while(!Thread.interrupted())
                 {
+                    stepCount += getSteps();
                     ValueBundle bundle = exchanger.exchange(null);
                     int convergents = bundle.getConvergents();
                     if(convergents == 0)
