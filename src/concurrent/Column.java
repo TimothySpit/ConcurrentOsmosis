@@ -103,7 +103,7 @@ public class Column implements Runnable
 				if (!currentNode.flush())
 					verticalConvergencePossible = false;
 			}
-			if (verticalConvergencePossible)
+			if (!nodeList.isEmpty() && verticalConvergencePossible)
 			{
 				verticalConvergenceDetected = true;
 				//TODO: All future steps until stepsDone could be skipped
@@ -217,7 +217,7 @@ public class Column implements Runnable
 		{
 			//At this point value is only >0 when there was no corresponding node 
 			double value = received.get(y);
-			if (value <= 0.0)
+			if (value > 0.0)
 			{
 				Node newNode = new Node(value, y);
 				initializeNode(newNode);
