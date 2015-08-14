@@ -67,15 +67,32 @@ public class Column implements Runnable
 				Node next = currentNode.updateNext();
 				if (previous != null)
 				{
-					iterator.previous();
+					Node previousPreviousCandidate = iterator.previous();
 					iterator.add(previous);
 					iterator.next();
+					if (previousPreviousCandidate.getY() == previous.getY()-1)
+					{
+						//here the newly inserted node's previous neighbour gets informed
+						previousPreviousCandidate.setNext(previous);
+						previous.setPrevious(previousPreviousCandidate);
+					}
 					initializeNode(previous);
 				}
 				if (next != null)
 				{
 					iterator.add(next);
 					initializeNode(next);
+					if (iterator.hasNext())
+					{
+						Node nextNextCandidate = iterator.next();
+						if (nextNextCandidate.getY() == next.getY()+1)
+						{
+							//here the newly inserted node's potential next neighbour gets informed
+							nextNextCandidate.setPrevious(next);
+							next.setNext(nextNextCandidate);
+						}
+						iterator.previous();
+					}
 				}
 			}
 			iterator = nodeList.listIterator();
@@ -214,31 +231,10 @@ public class Column implements Runnable
          */
 	public synchronized void initializeNode(Node node)
 	{
-		
+		System.out.println("neue Node" + x + " | "+ node.getY());
 		
 		int y = node.getY();
 		
-		
-		//TODO: more efficient next/previous finds
-		ListIterator <Node> iterator = nodeList.listIterator();
-		boolean donePrevious = false;
-		boolean doneNext = false;
-		while(!(donePrevious && doneNext) && iterator.hasNext())
-		{
-			Node currentNode = iterator.next();
-			if (!donePrevious && currentNode.getY() == y - 1)
-			{
-				currentNode.setNext(node);
-				node.setPrevious(currentNode);
-				donePrevious = true;
-			}
-			if (!doneNext && currentNode.getY() == y + 1)
-			{
-				node.setNext(currentNode);
-				currentNode.setPrevious(node);
-				doneNext = true;
-			}
-		}
 
 		double rate = ginfo.getRateForTarget(x, y, Neighbour.Left);
 		node.setRate(Neighbour.Left, rate);
@@ -255,7 +251,7 @@ public class Column implements Runnable
 	
 	/**
         * Inserts a node in the list, list remains sorted by y-coordinates
-        * 
+        * Neighbour nodes get new "previous" and "next"
         * @param node the node which gets inserted
         */
 	public synchronized void insertNode(Node node)
@@ -270,9 +266,27 @@ public class Column implements Runnable
 			{
 				index ++;
 			}
-			//tell other nodes
 		}
 		nodeList.add(index, node);
+		Node candidate;
+		if (index > 0)
+		{
+			candidate = nodeList.get(index-1);
+			if (candidate.getY() == node.getY() - 1)
+			{
+				candidate.setNext(node);
+				node.setPrevious(candidate);
+			}
+		}
+		if (index < nodeList.size() - 1)
+		{
+			candidate = nodeList.get(index+1);
+			if (candidate.getY() == node.getY() + 1)
+			{
+				node.setNext(candidate);
+				candidate.setPrevious(node);
+			}
+		}
 		initializeNode(node);
 	}
 	
@@ -286,7 +300,12 @@ public class Column implements Runnable
 		return (x == ginfo.width-1);
 	}
 	
-	public TDoubleArrayList getNodeValues()
+	/**
+     * Returns a TDoubleArrayList of size height with
+     * - the value of existing nodes, where nodes exist
+     * - 0.0 everywhere else
+     */
+	public synchronized TDoubleArrayList getNodeValues()
 	{
 		TDoubleArrayList values = new TDoubleArrayList(height);
 		values.fill(0, height, 0.0);
