@@ -142,7 +142,7 @@ public class Column implements Runnable
 			}
 			if (!isRightmost())
 			{
-				leftValues.set(currentNode.getY(), currentNode.emitRight());
+				rightValues.set(currentNode.getY(), currentNode.emitRight());
 			}
 		}
 		ValueBundle receivedFromLeft = null;
@@ -220,7 +220,7 @@ public class Column implements Runnable
 			if (value > 0.0)
 			{
 				Node newNode = new Node(value, y);
-				initializeNode(newNode);
+				insertNode(newNode);
 			}
 		}
 	}
@@ -298,7 +298,7 @@ public class Column implements Runnable
 
 	public synchronized boolean isRightmost()
 	{
-		return (x == ginfo.width-1);
+		return (x == ginfo.width - 1);
 	}
 	
 	/**
