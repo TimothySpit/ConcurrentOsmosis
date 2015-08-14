@@ -36,7 +36,7 @@ public class Column implements Runnable
 
 	@Override
 	public void run()
-        {
+    {
 		int happenedExchanges = 0;
         while(!Thread.interrupted())
         {
@@ -48,7 +48,8 @@ public class Column implements Runnable
         	//System.out.println("X-Coordinate: "+x + "; "+ nodeList.getFirst().toString());
         	stepsDone = 0;
         }
-        }
+        System.out.println("Column "+x + " Terminated.");
+     }
 	
     /**
     * Iterates through the column
@@ -103,7 +104,7 @@ public class Column implements Runnable
 				if (!currentNode.flush())
 					verticalConvergencePossible = false;
 			}
-			if (!nodeList.isEmpty() && verticalConvergencePossible)
+			if (verticalConvergencePossible)
 			{
 				verticalConvergenceDetected = true;
 				//TODO: All future steps until stepsDone could be skipped
@@ -174,7 +175,9 @@ public class Column implements Runnable
 			}
 
 		if (currentSteps == 0)
+		{
 			Thread.currentThread().interrupt();
+		}
 		boolean horizontalConvergencePossible = true;
 		if(!isLeftmost())
 			receiveHorizontal(receivedFromLeft.getValues());

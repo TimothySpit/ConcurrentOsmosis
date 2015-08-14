@@ -115,10 +115,11 @@ public class PseudoColumn
                 exchanger.exchange(null);
                 ConcOsmosis.LOCK.lock();
                 ConcOsmosis.terminated = true;
-                ConcOsmosis.LOCK.unlock();
                 ConcOsmosis.CONDITION.signal();
+                ConcOsmosis.LOCK.unlock();
             }
-            catch(InterruptedException e){/* Do Nothing*/}
+            catch(InterruptedException e){System.err.println("Interrupted Listener!");}
+            finally{System.out.println("Listener Terminated");}
         }
     }
     
@@ -149,7 +150,7 @@ public class PseudoColumn
         {
             try
             {
-                while(!Thread.interrupted())
+                while(!Thread.currentThread().isInterrupted())
                 {
                     int steps = getSteps();
                     ValueBundle bundle = new ValueBundle(steps);
@@ -159,7 +160,8 @@ public class PseudoColumn
                     if(steps==0){Thread.currentThread().interrupt();}
                 }
             }
-            catch(InterruptedException e){/* Do nothing*/}
+            catch(InterruptedException e){System.err.println("Interrupted Passer!");}
+            finally{System.out.println("Passer Terminated");}
         }
     }
 }
