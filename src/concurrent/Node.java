@@ -4,8 +4,8 @@ package concurrent;
  * Class representing a node in our simulation. Each node has a specific value,
  * which is passed with specific rates to its neighbours.
  * 
- * @author Timo Speith (& Magnus Halbe)
- * @version 0.5
+ * @author Timo Speith & Magnus Halbe
+ * @version 1.0
  */
 public class Node
 {
@@ -24,7 +24,6 @@ public class Node
     
     //Transmission rates of this node to its neighbours according to the enum
     private final double[] rates = new double[4];
-    
     
     /**
      * Creates a new instance of a Node. 
@@ -175,25 +174,54 @@ public class Node
         return result;
     }
     
+    /**
+     * Creates a string representation of this Node.
+     * 
+     * @return a string representation of this node
+     */
     @Override
     public String toString()
     {
     	return "Y-Coordinate: " + y + "; Value: "+ value;
     }
+    
+    /**
+     * Returns this nodes previous node if it exists
+     * 
+     * @return this nodes previous Node
+     */
+    public Node getPrevious() 
+    {
+        return previous;
+    }
+    
+    /**
+     * Sets this nodes previous Node
+     * 
+     * @param previous the node to be set as previous
+     */
+    public void setPrevious(Node previous)
+    {
+        this.previous = previous;
+    }
 
-	public Node getPrevious() {
-		return previous;
-	}
-
-	public void setPrevious(Node previous) {
-		this.previous = previous;
-	}
-
-	public Node getNext() {
-		return next;
-	}
-
-	public void setNext(Node next) {
-		this.next = next;
-	}
+    /**
+     * Returns this nodes next node if it exists
+     * 
+     * @return this nodes next Node
+     */
+    public Node getNext()
+    {
+        return next;
+    }
+    
+    /**
+     * Sets this nodes next Node
+     * 
+     * @param next the node to be set as next
+     */
+    public void setNext(Node next)
+    {
+        this.next = next;
+    }
 }
