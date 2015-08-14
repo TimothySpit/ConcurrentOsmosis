@@ -20,6 +20,9 @@ public class PseudoColumn
     // Current step count. Halfed if convergent, doubled if not convergent.
     private int steps;
     
+    private int stepCount = 0;
+    private final int plottery = 1000;
+    
     /**
      * Creates a new PseudoColumn with a specified maximal step count.
      * It is guaranteed that this step count is never surpassed.
@@ -112,6 +115,9 @@ public class PseudoColumn
                     System.out.println("Convergent right now: " + convergents);
                     }
                     else
+                    {signalTermination(); Thread.currentThread().interrupt();}
+                    
+                    if(stepCount >= plottery)
                     {signalTermination(); Thread.currentThread().interrupt();}
                 }
                 int count;
