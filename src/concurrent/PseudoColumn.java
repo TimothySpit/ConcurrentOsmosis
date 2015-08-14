@@ -108,11 +108,20 @@ public class PseudoColumn
                     if(convergents == 0)
                     {increaseSteps();}
                     else if(convergents < columnCount)
-                    {reduceSteps();}
+                    {reduceSteps();
+                    System.out.println("Convergent right now: " + convergents);
+                    }
                     else
                     {signalTermination(); Thread.currentThread().interrupt();}
                 }
-                exchanger.exchange(null);
+                int count;
+                ValueBundle vb;
+                do
+                {
+                	vb = exchanger.exchange(null);
+                	count = vb.getCurrentSteps();
+                }
+                while(count != 0);
                 ConcOsmosis.LOCK.lock();
                 ConcOsmosis.terminated = true;
                 ConcOsmosis.CONDITION.signal();
@@ -155,8 +164,8 @@ public class PseudoColumn
                     int steps = getSteps();
                     ValueBundle bundle = new ValueBundle(steps);
                     exchanger.exchange(bundle);
-                    if(steps < 100)
-                    {System.out.println("PseudoColumn says now " + steps);}
+                   // if(steps>1)
+                    //{System.out.println("PseudoColumn says now " + steps);}
                     if(steps==0){Thread.currentThread().interrupt();}
                 }
             }

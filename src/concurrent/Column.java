@@ -104,7 +104,7 @@ public class Column implements Runnable
 				if (!currentNode.flush())
 					verticalConvergencePossible = false;
 			}
-			if (verticalConvergencePossible)
+			if (!nodeList.isEmpty() && verticalConvergencePossible)
 			{
 				verticalConvergenceDetected = true;
 				//TODO: All future steps until stepsDone could be skipped
@@ -160,8 +160,7 @@ public class Column implements Runnable
 				e.printStackTrace();
 			}
 		
-		//if (columnConvergenceDetected)
-		if (verticalConvergenceDetected)
+		if (columnConvergenceDetected)
 		{
 			convergencesUntilHere++;
 		}
@@ -173,16 +172,37 @@ public class Column implements Runnable
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-
+		
 		if (currentSteps == 0)
 		{
 			Thread.currentThread().interrupt();
 		}
 		boolean horizontalConvergencePossible = true;
+		boolean inflowIsOutflowLeft = false;
+		boolean inflowIsOutflowRight = false;
+		
 		if(!isLeftmost())
+		{
+			inflowIsOutflowLeft = (receivedFromLeft.getValues().sum() - leftValues.sum() < epsilon);
 			receiveHorizontal(receivedFromLeft.getValues());
+			//TODO: Now each column checks the same thing as neighbour, fix
+		}
+			
 		if(!isRightmost())
+		{
+			inflowIsOutflowLeft = (receivedFromRight.getValues().sum() - rightValues.sum() < epsilon);
 			receiveHorizontal(receivedFromRight.getValues());
+			//TODO: Now each column checks the same thing as neighbour, fix
+		}
+		
+		columnConvergenceDetected = inflowIsOutflowLeft || inflowIsOutflowRight;
+		
+		/*columnConvergenceDetected = false;
+		if (!nodeList.isEmpty() && horizontalConvergencePossible && verticalConvergenceDetected)
+		{
+			columnConvergenceDetected = true;
+		}*/
+			
 		iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
@@ -190,11 +210,7 @@ public class Column implements Runnable
 			if (!currentNode.flush())
 				horizontalConvergencePossible = false;
 		}
-		columnConvergenceDetected = false;
-		if (!nodeList.isEmpty() && horizontalConvergencePossible && verticalConvergenceDetected)
-		{
-			columnConvergenceDetected = true;
-		}
+		
 		stepsTotal = currentSteps;
 	}
 	
@@ -204,7 +220,7 @@ public class Column implements Runnable
 	 * 
 	 * @param TDoubleArrayList the double values that were received
 	 */
-	private synchronized void receiveHorizontal(TDoubleArrayList received)
+	private void receiveHorizontal(TDoubleArrayList received)
 	{
 		ListIterator <Node> iterator = nodeList.listIterator();
 		while(iterator.hasNext())
@@ -233,7 +249,7 @@ public class Column implements Runnable
          * Updates next and previous of the node, if existing.
          * @param node the node which gets rates
          */
-	public synchronized void initializeNode(Node node)
+	private void initializeNode(Node node)
 	{
 		System.out.println("neue Node" + x + " | "+ node.getY());
 		
@@ -294,12 +310,12 @@ public class Column implements Runnable
 		initializeNode(node);
 	}
 	
-	public synchronized boolean isLeftmost()
+	public  boolean isLeftmost()
 	{
 		return (x == 0);
 	}
 
-	public synchronized boolean isRightmost()
+	public boolean isRightmost()
 	{
 		return (x == ginfo.width - 1);
 	}
@@ -309,7 +325,7 @@ public class Column implements Runnable
      * - the value of existing nodes, where nodes exist
      * - 0.0 everywhere else
      */
-	public synchronized TDoubleArrayList getNodeValues()
+	public  TDoubleArrayList getNodeValues()
 	{
 		TDoubleArrayList values = new TDoubleArrayList(height);
 		values.fill(0, height, 0.0);

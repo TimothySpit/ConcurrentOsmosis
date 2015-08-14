@@ -21,7 +21,7 @@ public class ConcOsmosis
         private static int width;
         
         // Fixed maximum step count
-        private final static int STEPS = 100;
+        private final static int STEPS = 128;
         
         // Convergence tools
         public static boolean terminated;
