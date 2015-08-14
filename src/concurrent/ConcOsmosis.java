@@ -84,7 +84,6 @@ public class ConcOsmosis
                 Column start = new Column(column, STEPS, ginfo, left, right);
                 columns[column] = start;
                 Node first = new Node(value, row);
-                start.initializeNode(first);
                 start.insertNode(first);
                 t = new Thread(start);
                 t.start();
