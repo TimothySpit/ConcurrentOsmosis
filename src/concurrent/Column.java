@@ -27,6 +27,7 @@ public class Column implements Runnable
 		x = xCoord;
 		this.ginfo = ginfo;
 		height = ginfo.height;
+		this.stepsTotal = stepsTotal;
 		stepsDone = 0;
 		leftExchanger = left;
 		rightExchanger = right;
@@ -56,7 +57,7 @@ public class Column implements Runnable
 	public void performSteps()
 	{
 		verticalConvergenceDetected = false;
-		while(stepsTotal < stepsDone)
+		while(stepsDone < stepsTotal)
 		{
 			boolean verticalConvergencePossible = true;
 			ListIterator<Node> iterator = nodeList.listIterator();
@@ -122,13 +123,13 @@ public class Column implements Runnable
 		if (!isLeftmost())
 		{
 			leftValues = new TDoubleArrayList(height);
-			leftValues.fill(0, height - 1,0.0);
+			leftValues.fill(0, height,0.0);
 		}
 			
 		if (!isRightmost())
 		{
 			rightValues = new TDoubleArrayList(height, 0.0);
-			rightValues.fill(0, height - 1,0.0);
+			rightValues.fill(0, height,0.0);
 		}
 			
 		ListIterator<Node> iterator = nodeList.listIterator();
