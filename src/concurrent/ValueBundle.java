@@ -6,26 +6,29 @@ import gnu.trove.list.array.TDoubleArrayList;
  * Bundle of values which is passed via Exchangers between different columns
  * 
  * @author Timo Speith & Magnus Halbe
- * @version 1.0
+ * @version 1.2
  */
 public class ValueBundle
 {
 	private TDoubleArrayList values; // List of all values
-	private int convergents = 0; // Number of convergent columns
+	private int hConvergents = 0; // Number of horizontal convergent columns
+        private int vConvergents = 0; // Number of vertical convergent columns
 	private int currentSteps; // Steps to use
 	
         /**
          * Creates a new instance of ValueBundle
          * 
          * @param values the values which should be passed
-         * @param convergents the number of convergent threads until now
+         * @param hConvergents the number of horizontal convergent threads until now
+         * @param vConvergents the number of vertical convergent threads until now
          * @param currentSteps the number of steps the successor should use
          */
-	public ValueBundle(TDoubleArrayList values, int convergents, int currentSteps)
+	public ValueBundle(TDoubleArrayList values, int hConvergents ,int vConvergents, int currentSteps)
         {
             this.values = values;
+            this.hConvergents = hConvergents;
+            this.vConvergents = vConvergents;
             this.currentSteps = currentSteps;
-            this.convergents = convergents;
 	}
         
         /**
@@ -35,7 +38,17 @@ public class ValueBundle
          */
         public ValueBundle(int currentSteps)
         {
-            this(null, 0, currentSteps);   
+            this(null, 0, 0, currentSteps);   
+        }
+        
+        /**
+         * Creates a new instance of ValueBundle with no convergents and no steps.
+         * 
+         * @param values the values to be passed
+         */
+        public ValueBundle(TDoubleArrayList values)
+        {
+            this(values, 0, 0, 0);   
         }
 	
         /**
@@ -49,13 +62,23 @@ public class ValueBundle
 	}
 	
         /**
-         * Returns the convergent columns until this exchange
+         * Returns the horizontal convergent columns until this exchange
          * 
-         * @return the convergent columns until this exchange
+         * @return the horizontal convergent columns until this exchange
          */
-	public int getConvergents()
+	public int getHConvergents()
 	{
-            return convergents;
+            return hConvergents;
+	}
+        
+        /**
+         * Returns the vertical convergent columns until this exchange
+         * 
+         * @return the vertical convergent columns until this exchange
+         */
+	public int getVConvergents()
+	{
+            return vConvergents;
 	}
 	
         /**

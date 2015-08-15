@@ -15,7 +15,7 @@ public class Node
     double change;
     
     //y-coordinate of this Node in its specific column
-    private int y;
+    private final int y;
     
     //This nodes pedecessing neighbour
     private Node previous;
@@ -162,16 +162,12 @@ public class Node
     
     /**
      * Method to be invoked every turn. Calculates the changes made during the turn
-     * to this nodes value. This method also detects convergence.
-     * 
-     * @return true if the changes made during this turn are less than epsilon, false otherwise.
+     * to this nodes value.
      */
-    public boolean flush()
+    public void flush()
     {
-        boolean result = change <= Column.epsilon;
         value += change;
         change = 0.0;
-        return result;
     }
     
     /**
