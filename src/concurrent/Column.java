@@ -15,6 +15,8 @@ public class Column implements Runnable
     private boolean columnConvergenceDetected;
     private boolean filledWithZeros = true;
     private static final double columnConsideredEmptyThreshold = 0.0;
+    TDoubleArrayList leftValues = null;
+	TDoubleArrayList rightValues = null;
 	
 	private int stepsTotal;
 	private int stepsDone;
@@ -33,6 +35,10 @@ public class Column implements Runnable
 		leftExchanger = left;
 		rightExchanger = right;
 		nodeList = new LinkedList<>();
+		if (!isLeftmost())
+			leftValues = new TDoubleArrayList(height);
+		if (!isRightmost())
+			rightValues = new TDoubleArrayList(height);
 	}
 
 	@Override
@@ -59,6 +65,14 @@ public class Column implements Runnable
 	public void performSteps()
 	{
 		verticalConvergenceDetected = false;
+		if (!isLeftmost())
+		{
+			leftValues.fill(0, height,0.0);
+		}
+		if (!isRightmost())
+		{
+			rightValues.fill(0, height, 0.0);
+		}
 		while(stepsDone < stepsTotal)
 		{
 			ListIterator<Node> iterator = nodeList.listIterator();
@@ -67,6 +81,18 @@ public class Column implements Runnable
 			{
 				Node currentNode = iterator.next();
 				valueSum += currentNode.getValue();
+				int y = currentNode.getY();
+				if (!isLeftmost())
+				{
+					double leftChange = currentNode.emitLeft();
+					leftValues.set(y, leftValues.get(y) + leftChange);
+				}
+				if (!isRightmost())
+				{
+					double rightChange = currentNode.emitRight();
+					rightValues.set(y, rightValues.get(y) + rightChange);
+				}
+				
 				Node previous = currentNode.updatePrevious();
 				Node next = currentNode.updateNext();
 				if (previous != null)
@@ -130,34 +156,9 @@ public class Column implements Runnable
      */
 	public void exchange()
 	{
-		TDoubleArrayList leftValues = null;
-		TDoubleArrayList rightValues = null;
-		
-		if (!isLeftmost())
-		{
-			leftValues = new TDoubleArrayList(height);
-			leftValues.fill(0, height,0.0);
-		}
-			
-		if (!isRightmost())
-		{
-			rightValues = new TDoubleArrayList(height, 0.0);
-			rightValues.fill(0, height,0.0);
-		}
 			
 		ListIterator<Node> iterator = nodeList.listIterator();
-		while(iterator.hasNext())
-		{
-			Node currentNode = iterator.next();
-			if(!isLeftmost())
-			{
-				leftValues.set(currentNode.getY(), currentNode.emitLeft());
-			}
-			if (!isRightmost())
-			{
-				rightValues.set(currentNode.getY(), currentNode.emitRight());
-			}
-		}
+		
 		ValueBundle receivedFromLeft = null;
 		ValueBundle receivedFromRight = null;
 		int hConvergencesUntilHere = 0;
