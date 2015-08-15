@@ -162,7 +162,7 @@ public class Column implements Runnable
 		
 		if (columnConvergenceDetected)
 		{
-			convergencesUntilHere++;
+			//convergencesUntilHere++;
 		}
 			
 		

@@ -21,7 +21,8 @@ public class PseudoColumn
     private int steps;
     
     private int stepCount = 0;
-    private final int plottery = 1000;
+    private final int plottery = 1000000000;
+    private final boolean plotteryStop = true;
     
     /**
      * Creates a new PseudoColumn with a specified maximal step count.
@@ -127,7 +128,7 @@ public class PseudoColumn
                         terminate = true;
                     }
                     
-                    if(stepCount >= plottery)
+                    if(plotteryStop && stepCount >= plottery)
                     {
                         signalTermination();
                         terminate = true;
@@ -185,12 +186,13 @@ public class PseudoColumn
         {
             try
             {
-                while(!Thread.currentThread().isInterrupted())
+                boolean terminate = false;
+                while(!terminate)
                 {
                     int steps = getSteps();
                     ValueBundle bundle = new ValueBundle(steps);
                     exchanger.exchange(bundle);
-                    if(steps==0){Thread.currentThread().interrupt();}
+                    if(steps==0){terminate = true;}
                 }
             }
             catch(InterruptedException e){System.err.println("Interrupted Passer!");}
