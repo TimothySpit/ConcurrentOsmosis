@@ -116,7 +116,7 @@ public class PseudoColumn
                     int convergents = hConvergents + vConvergents;
                     if(convergents == 0)
                     {increaseSteps();}
-                    else if(convergents < ((columnCount*2)-1))
+                    else if(convergents < ((columnCount*2)-1)) //hConv is Columns -1
                     {
                         reduceSteps();
                         System.out.println("Convergent: H: " + hConvergents + ", V: " + vConvergents);
