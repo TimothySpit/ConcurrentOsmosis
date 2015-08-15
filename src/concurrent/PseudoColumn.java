@@ -105,23 +105,37 @@ public class PseudoColumn
         {
             try
             {
-                while(!Thread.interrupted())
+                boolean terminate = false;
+                while(!terminate)
                 {
                     stepCount += getSteps();
+                    
                     ValueBundle bundle = exchanger.exchange(null);
-                    int convergents = bundle.getConvergents();
+                    int hConvergents = bundle.getHConvergents();
+                    int vConvergents = bundle.getVConvergents();
+                    int convergents = hConvergents + vConvergents;
+                    
                     if(convergents == 0)
                     {increaseSteps();}
-                    else if(convergents < columnCount)
-                    {reduceSteps();
-                    System.out.println("Convergent right now: " + convergents);
+                    else if(convergents < (columnCount*2))
+                    {
+                        reduceSteps();
+                        System.out.println("Convergent: H: " + hConvergents + ", V: " + vConvergents);
                     }
                     else
-                    {signalTermination(); Thread.currentThread().interrupt();}
+                    {
+                        signalTermination();
+                        terminate = true;
+                    }
                     
                     if(plotteryStop && stepCount >= plottery)
-                    {signalTermination(); Thread.currentThread().interrupt();}
+                    {
+                        signalTermination();
+                        terminate = true;
+                    }
                 }
+                
+                // Wait for columns to pass 0 steps back.
                 int count;
                 ValueBundle vb;
                 do
@@ -130,10 +144,15 @@ public class PseudoColumn
                 	count = vb.getCurrentSteps();
                 }
                 while(count != 0);
+                
+                // Signal termination
                 ConcOsmosis.LOCK.lock();
-                ConcOsmosis.terminated = true;
-                ConcOsmosis.CONDITION.signal();
-                ConcOsmosis.LOCK.unlock();
+                try
+                {
+                    ConcOsmosis.terminate = true;
+                    ConcOsmosis.CONDITION.signal();
+                }
+                finally {ConcOsmosis.LOCK.unlock();}
             }
             catch(InterruptedException e){System.err.println("Interrupted Listener!");}
             finally{System.out.println("Listener Terminated");}
@@ -167,14 +186,13 @@ public class PseudoColumn
         {
             try
             {
-                while(!Thread.currentThread().isInterrupted())
+                boolean terminate = false;
+                while(!terminate)
                 {
                     int steps = getSteps();
                     ValueBundle bundle = new ValueBundle(steps);
                     exchanger.exchange(bundle);
-                   // if(steps>1)
-                    //{System.out.println("PseudoColumn says now " + steps);}
-                    if(steps==0){Thread.currentThread().interrupt();}
+                    if(steps==0){terminate = true;}
                 }
             }
             catch(InterruptedException e){System.err.println("Interrupted Passer!");}

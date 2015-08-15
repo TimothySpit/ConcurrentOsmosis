@@ -24,7 +24,7 @@ public class ConcOsmosis
         private final static int STEPS = 128;
         
         // Convergence tools
-        public static boolean terminated;
+        public static boolean terminate;
         public static final ReentrantLock LOCK = new ReentrantLock();
         public static final Condition CONDITION = LOCK.newCondition();
         
@@ -106,14 +106,17 @@ public class ConcOsmosis
                 rt.start();
                 lt.start();
                 
-                // Waiting for termination
+                // Wait for columns to terminate
                 LOCK.lock();
-                while(!terminated)
+                try
                 {
-                    CONDITION.await();
-                    LOCK.lock();
+                    while(!terminate)
+                    {
+                        CONDITION.await();
+                        LOCK.lock();
+                    }
                 }
-                LOCK.unlock();
+                finally {LOCK.unlock();}
                 System.out.println("Ende im Gelaende!");
                 
                 // Plotting the whole thing
