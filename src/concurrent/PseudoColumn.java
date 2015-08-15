@@ -111,16 +111,19 @@ public class PseudoColumn
                     stepCount += getSteps();
                     
                     ValueBundle bundle = exchanger.exchange(null);
+                    
                     int hConvergents = bundle.getHConvergents();
                     int vConvergents = bundle.getVConvergents();
-                    int convergents = hConvergents + vConvergents;
                     int emptyColumns = bundle.getEmptyColumns();
-                    if(convergents == 0)
+                    
+                    if((vConvergents + hConvergents) == 0)
                     {increaseSteps();}
-                    else if(convergents < ((columnCount*2)-1)) //hConv is Columns -1
+                    
+                    else if((emptyColumns + vConvergents) < columnCount &&
+                            (emptyColumns + hConvergents) < (columnCount - 1))
                     {
-                        //reduceSteps();
-                        System.out.println("So viele steps " + getSteps()+ "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
+                        reduceSteps();
+                        System.out.println("Steps: " + getSteps()+ "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
                     }
                     else
                     {
