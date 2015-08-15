@@ -16,7 +16,7 @@ public class ConcOsmosis
 {
         private static Column[] columns;
         
-        public static double epsilon;
+        private static double epsilon;
         
         private static int width;
         
@@ -143,6 +143,16 @@ public class ConcOsmosis
                 left = right;
                 right = new Exchanger<>(); 
             }
+        }
+        
+        /**
+         * Returns epsilon
+         * 
+         * @return epsilon
+         */
+        public static double getEpsilon()
+        {
+            return epsilon;
         }
         
         /**
