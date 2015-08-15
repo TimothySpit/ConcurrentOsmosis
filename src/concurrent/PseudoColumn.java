@@ -21,7 +21,7 @@ public class PseudoColumn
     private int steps;
     
     private int stepCount = 0;
-    private final int plottery = 100000000;
+    private final int plottery = 1000000;
     private final boolean plotteryStop = true;
     
     /**
