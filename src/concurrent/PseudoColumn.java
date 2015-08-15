@@ -21,7 +21,8 @@ public class PseudoColumn
     private int steps;
     
     private int stepCount = 0;
-    private final int plottery = 1000;
+    private final int plottery = 1000000000;
+    private final boolean plotteryStop = true;
     
     /**
      * Creates a new PseudoColumn with a specified maximal step count.
@@ -118,7 +119,7 @@ public class PseudoColumn
                     else
                     {signalTermination(); Thread.currentThread().interrupt();}
                     
-                    if(stepCount >= plottery)
+                    if(plotteryStop && stepCount >= plottery)
                     {signalTermination(); Thread.currentThread().interrupt();}
                 }
                 int count;
