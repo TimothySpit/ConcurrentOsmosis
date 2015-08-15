@@ -21,8 +21,8 @@ public class PseudoColumn
     private int steps;
     
     private int stepCount = 0;
-    private final int plottery = 1000000;
-    private final boolean plotteryStop = true;
+    private final int plottery = 10000;
+    private final boolean plotteryStop = false;
     
     /**
      * Creates a new PseudoColumn with a specified maximal step count.
@@ -112,11 +112,11 @@ public class PseudoColumn
                     
                     ValueBundle bundle = exchanger.exchange(null);
                     
-                    int hConvergents = bundle.getHConvergents();
+                    int hConvergents = columnCount - bundle.getHConvergents();
                     int vConvergents = bundle.getVConvergents();
                     int emptyColumns = bundle.getEmptyColumns();
                     
-                    System.out.println("Steps: " + stepCount + "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
+                    //System.out.println("Steps: " + stepCount + "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
                     boolean vCo = ((emptyColumns + vConvergents) == columnCount);
                     boolean hCo = ((emptyColumns + hConvergents) == (columnCount - 1));
                     //System.out.println( (vCo && hCo) + " " + terminate);
