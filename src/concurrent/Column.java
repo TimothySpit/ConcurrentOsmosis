@@ -13,6 +13,8 @@ public class Column implements Runnable
     private GraphInfo ginfo;
     private boolean verticalConvergenceDetected;
     private boolean columnConvergenceDetected;
+    private boolean filledWithZeros = true;
+    private static final double columnConsideredEmptyThreshold = 0.0;
 	
 	private int stepsTotal;
 	private int stepsDone;
@@ -60,10 +62,11 @@ public class Column implements Runnable
 		while(stepsDone < stepsTotal)
 		{
 			ListIterator<Node> iterator = nodeList.listIterator();
+			double valueSum = 0.0;
 			while(iterator.hasNext())
 			{
 				Node currentNode = iterator.next();
-				
+				valueSum += currentNode.getValue();
 				Node previous = currentNode.updatePrevious();
 				Node next = currentNode.updateNext();
 				if (previous != null)
@@ -108,7 +111,12 @@ public class Column implements Runnable
 				newEuclideanNorm += Math.pow(oldValue - newValue, 2.0);
 			}
 			newEuclideanNorm = Math.sqrt(newEuclideanNorm);
-			if (!nodeList.isEmpty() && newEuclideanNorm < ConcOsmosis.getEpsilon())
+			filledWithZeros = false;
+			if (valueSum <= columnConsideredEmptyThreshold)
+			{
+				filledWithZeros = true;
+			}
+			else if (newEuclideanNorm < ConcOsmosis.getEpsilon())
 			{
 				verticalConvergenceDetected = true;
 				//TODO: All future steps until stepsDone could be skipped
@@ -154,6 +162,7 @@ public class Column implements Runnable
 		ValueBundle receivedFromRight = null;
 		int hConvergencesUntilHere = 0;
 		int vConvergencesUntilHere = 0;
+		int emptyColumnsUntilHere = 0;
 		int currentSteps = 1;
 		
 		//if(!isLeftmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
@@ -161,6 +170,7 @@ public class Column implements Runnable
 				receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues));
 				hConvergencesUntilHere = receivedFromLeft.getHConvergents();
 				vConvergencesUntilHere = receivedFromLeft.getVConvergents();
+				emptyColumnsUntilHere = receivedFromLeft.getEmptyColumns();
 				currentSteps = receivedFromLeft.getCurrentSteps();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -170,26 +180,39 @@ public class Column implements Runnable
 		if(!isLeftmost())
 		{
 			double euclideanNorm = 0.0;
-			for(int i=0; i < leftValues.size(); i++)
+			if (receivedFromLeft.getValues().sum() <= columnConsideredEmptyThreshold && leftValues.sum() <= columnConsideredEmptyThreshold)
+				inflowIsOutflowLeft = false; //this one is 
+			else
 			{
-				euclideanNorm += Math.pow((receivedFromLeft.getValues().get(i) - leftValues.get(i)), 2);
+				for(int i=0; i < leftValues.size(); i++)
+				{
+					euclideanNorm += Math.pow((receivedFromLeft.getValues().get(i) - leftValues.get(i)), 2);
+				}
+				euclideanNorm = Math.sqrt(euclideanNorm);
+				inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
 			}
-			euclideanNorm = Math.sqrt(euclideanNorm);
-			inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
 		}
-		columnConvergenceDetected = (!nodeList.isEmpty() && inflowIsOutflowLeft);
-		if (columnConvergenceDetected)
+		columnConvergenceDetected = inflowIsOutflowLeft;
+		if (filledWithZeros)
 		{
-			hConvergencesUntilHere++;
+			emptyColumnsUntilHere++;
 		}
-		if (verticalConvergenceDetected)
+		else
 		{
-			vConvergencesUntilHere++;
+			if (columnConvergenceDetected)
+			{
+				hConvergencesUntilHere++;
+			}
+			if (verticalConvergenceDetected)
+			{
+				vConvergencesUntilHere++;
+			}
 		}
+		
 			
 		//if(!isRightmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
-				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, hConvergencesUntilHere, vConvergencesUntilHere, currentSteps));
+				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, hConvergencesUntilHere, vConvergencesUntilHere, emptyColumnsUntilHere, currentSteps));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -258,7 +281,6 @@ public class Column implements Runnable
 		System.out.println("neue Node" + x + " | "+ node.getY());
 		
 		int y = node.getY();
-		
 
 		double rate = ginfo.getRateForTarget(x, y, Neighbour.Left);
 		node.setRate(Neighbour.Left, rate);
