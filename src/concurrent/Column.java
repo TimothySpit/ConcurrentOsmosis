@@ -166,6 +166,19 @@ public class Column implements Runnable
 				e.printStackTrace();
 			}
 		
+		boolean inflowIsOutflowLeft = false;
+		if(!isLeftmost())
+		{
+			double euclideanNorm = 0.0;
+			for(int i=0; i < leftValues.size(); i++)
+			{
+				euclideanNorm += Math.pow((receivedFromLeft.getValues().get(i) - leftValues.get(i)), 2);
+			}
+			euclideanNorm = Math.sqrt(euclideanNorm);
+			inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
+		}
+		if (!nodeList.isEmpty() && inflowIsOutflowLeft)
+			columnConvergenceDetected = true;
 		if (columnConvergenceDetected)
 		{
 			hConvergencesUntilHere++;
@@ -186,36 +199,15 @@ public class Column implements Runnable
 		{
 			Thread.currentThread().interrupt();
 		}
-		boolean inflowIsOutflowLeft = false;
-		boolean inflowIsOutflowRight = false;
 		
 		if(!isLeftmost())
 		{
-			double euclideanNorm = 0.0;
-			for(int i=0; i < leftValues.size(); i++)
-			{
-				euclideanNorm += Math.pow((leftValues.get(i) - receivedFromLeft.getValues().get(i)), 2);
-			}
-			euclideanNorm = Math.sqrt(euclideanNorm);
-			inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
 			receiveHorizontal(receivedFromLeft.getValues());
-			//TODO: Currently each column calculates the euclideanNorm in both directions
 		}
-			
 		if(!isRightmost())
 		{
-			double euclideanNorm = 0.0;
-			for(int i=0; i < rightValues.size(); i++)
-			{
-				euclideanNorm += Math.pow((rightValues.get(i) - receivedFromRight.getValues().get(i)), 2);
-			}
-			euclideanNorm = Math.sqrt(euclideanNorm);
-			inflowIsOutflowRight = (euclideanNorm < ConcOsmosis.getEpsilon());
 			receiveHorizontal(receivedFromRight.getValues());
-			//TODO: Currently each column calculates the euclideanNorm in both directions
 		}
-		
-		columnConvergenceDetected = inflowIsOutflowLeft || inflowIsOutflowRight;
 			
 		iterator = nodeList.listIterator();
 		while(iterator.hasNext())

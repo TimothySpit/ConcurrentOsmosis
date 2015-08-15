@@ -21,7 +21,7 @@ public class PseudoColumn
     private int steps;
     
     private int stepCount = 0;
-    private final int plottery = 1000000000;
+    private final int plottery = 10000000;
     private final boolean plotteryStop = true;
     
     /**
@@ -118,7 +118,7 @@ public class PseudoColumn
                     {increaseSteps();}
                     else if(convergents < (columnCount*2))
                     {
-                        reduceSteps();
+                        //reduceSteps();
                         System.out.println("So viele steps " + getSteps() +" Convergent: H: " + hConvergents + ", V: " + vConvergents);
                     }
                     else
