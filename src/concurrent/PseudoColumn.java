@@ -116,32 +116,19 @@ public class PseudoColumn
                     int vConvergents = bundle.getVConvergents();
                     int emptyColumns = bundle.getEmptyColumns();
                     
-                    if(hConvergents < columnCount-1)
+                    System.out.println("Steps: " + stepCount + "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
+                    boolean vCo = ((emptyColumns + vConvergents) == columnCount);
+                    boolean hCo = ((emptyColumns + hConvergents) == (columnCount - 1));
+                    //System.out.println( (vCo && hCo) + " " + terminate);
+                    if(hConvergents == 0)
                     {increaseSteps();}
-                    
-                    else if((emptyColumns + vConvergents) == columnCount &&
-                            (emptyColumns + hConvergents) == (columnCount - 1))
-                    {
-                        signalTermination();
-                        terminate = true;
-                    }
-                    
-                    else if((hConvergents + emptyColumns) >= (columnCount-1)/2)
-                    {
-                        reduceSteps();
-                        System.out.println("Steps: " + getSteps()+ "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
-                    }
-                    
-                    else
-                    {
-                        System.out.print("+ ");
-                    }
+                    else if(vCo && hCo)
+                    {signalTermination(); terminate = true;}
+                    else if((hConvergents + emptyColumns) >= (columnCount-1))
+                    {}//reduceSteps();}
                     
                     if(plotteryStop && stepCount >= plottery)
-                    {
-                        signalTermination();
-                        terminate = true;
-                    }
+                    {signalTermination(); terminate = true;}
                 }
                 
                 // Wait for columns to pass 0 steps back.
