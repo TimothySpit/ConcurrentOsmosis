@@ -177,8 +177,7 @@ public class Column implements Runnable
 			euclideanNorm = Math.sqrt(euclideanNorm);
 			inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
 		}
-		if (!nodeList.isEmpty() && inflowIsOutflowLeft)
-			columnConvergenceDetected = true;
+		columnConvergenceDetected = (!nodeList.isEmpty() && inflowIsOutflowLeft);
 		if (columnConvergenceDetected)
 		{
 			hConvergencesUntilHere++;
