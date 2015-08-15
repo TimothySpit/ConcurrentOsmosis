@@ -4,7 +4,7 @@ package concurrent;
  * Class representing a node in our simulation. Each node has a specific value,
  * which is passed with specific rates to its neighbours.
  * 
- * @author Timo Speith & Magnus Halbe
+ * @author Timo Speith and Magnus Halbe
  * @version 1.0
  */
 public class Node
