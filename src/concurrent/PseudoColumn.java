@@ -119,7 +119,7 @@ public class PseudoColumn
                     else if(convergents < (columnCount*2))
                     {
                         reduceSteps();
-                        System.out.println("Convergent: H: " + hConvergents + ", V: " + vConvergents);
+                        System.out.println("So viele steps " + getSteps() +" Convergent: H: " + hConvergents + ", V: " + vConvergents);
                     }
                     else
                     {
