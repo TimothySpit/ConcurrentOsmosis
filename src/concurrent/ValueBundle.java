@@ -13,6 +13,7 @@ public class ValueBundle
 	private TDoubleArrayList values; // List of all values
 	private int hConvergents = 0; // Number of horizontal convergent columns
         private int vConvergents = 0; // Number of vertical convergent columns
+        private int emptyColumns = 0; // Number of empty columns
 	private int currentSteps; // Steps to use
 	
         /**
@@ -23,11 +24,12 @@ public class ValueBundle
          * @param vConvergents the number of vertical convergent threads until now
          * @param currentSteps the number of steps the successor should use
          */
-	public ValueBundle(TDoubleArrayList values, int hConvergents ,int vConvergents, int currentSteps)
+	public ValueBundle(TDoubleArrayList values, int hConvergents ,int vConvergents, int emptyColumns,int currentSteps)
         {
             this.values = values;
             this.hConvergents = hConvergents;
             this.vConvergents = vConvergents;
+            this.emptyColumns = emptyColumns;
             this.currentSteps = currentSteps;
 	}
         
@@ -38,7 +40,7 @@ public class ValueBundle
          */
         public ValueBundle(int currentSteps)
         {
-            this(null, 0, 0, currentSteps);   
+            this(null, 0, 0, 0, currentSteps);   
         }
         
         /**
@@ -48,7 +50,7 @@ public class ValueBundle
          */
         public ValueBundle(TDoubleArrayList values)
         {
-            this(values, 0, 0, 0);   
+            this(values, 0, 0, 0, 0);   
         }
 	
         /**
@@ -79,6 +81,16 @@ public class ValueBundle
 	public int getVConvergents()
 	{
             return vConvergents;
+	}
+        
+        /**
+         * Returns the empty columns
+         * 
+         * @return the empty columns
+         */
+	public int getEmptyColumns()
+	{
+            return emptyColumns;
 	}
 	
         /**
