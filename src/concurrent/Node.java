@@ -10,10 +10,15 @@ package concurrent;
 public class Node
 {
     //the value currently hold by this node
-    double value;
+    private double value;
     //the change which this node undergoes during one turn
-    double change;
+    private double change;
     
+    //the accumulator for the left output
+    private double leftAccu;
+    
+  //the accumulator for the left output
+    private double rightAccu;
     //y-coordinate of this Node in its specific column
     private final int y;
     
@@ -133,33 +138,52 @@ public class Node
     }
     
     /**
-     * Returns a specific amount of this Nodes value that would be passed to the Node
-     * lying east of it. Also registers this amount to be removed from this node.
+     * Registers a specific amount of this Nodes value that would be passed to the Node
+     * lying east of it and saves the change in accuLeft
      * 
-     * @return the double that contains the amount that would be output
      */
-    public double emitLeft()
+    public void emitIntoLeftAccu()
     {
         double rate = rates[Neighbour.Left.ordinal()];
         double pass = rate * value;
         register(-pass);
-        return pass;
+        leftAccu += pass;
     }
     
     /**
-     * Returns a specific amount of this Nodes value that would be passed to the Node
-     * lying west of it. Also registers this amount to be removed from this node.
+     * Registers a specific amount of this Nodes value that would be passed to the Node
+     * lying west of it and saves it in accuRight;
      * 
-     * @return the double that contains the amount that would be output
      */
-    public double emitRight()
+    public void emitIntoRightAccu()
     {
         double rate = rates[Neighbour.Right.ordinal()];
         double pass = rate * value;
         register(-pass);
-        return pass;
+        rightAccu += pass;
     }
     
+    /**
+     * Returns the content of leftAccu and resets it to 0.0.
+     * 
+     */
+    public double flushLeftAccu()
+    {
+    	double value = leftAccu;
+    	leftAccu = 0.0;
+    	return value;
+    }
+    
+    /**
+     * Returns the content of rightAccu and resets it to 0.0.
+     * 
+     */
+    public double flushRightAccu()
+    {
+    	double value = rightAccu;
+    	rightAccu = 0.0;
+    	return value;
+    }
     /**
      * Method to be invoked every turn. Calculates the changes made during the turn
      * to this nodes value.

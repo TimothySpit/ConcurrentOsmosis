@@ -15,15 +15,13 @@ public class Column implements Runnable
     private boolean columnConvergenceDetected;
     private boolean filledWithZeros = true;
     private static final double columnConsideredEmptyThreshold = 0.0;
-    TDoubleArrayList leftValues = null;
-    TDoubleArrayList rightValues = null;
 	
-    private int stepsTotal;
-    private int stepsDone;
+	private int stepsTotal;
+	private int stepsDone;
 
-    private Exchanger<ValueBundle> leftExchanger;
-    private Exchanger<ValueBundle> rightExchanger;
-    private LinkedList<Node> nodeList;
+	private Exchanger<ValueBundle> leftExchanger;
+	private Exchanger<ValueBundle> rightExchanger;
+	private LinkedList<Node> nodeList;
 	
 	public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<ValueBundle> left, Exchanger<ValueBundle> right)
         {
@@ -35,39 +33,32 @@ public class Column implements Runnable
 		leftExchanger = left;
 		rightExchanger = right;
 		nodeList = new LinkedList<>();
-		if (x == 0) {leftValues = new TDoubleArrayList(height);}
-		if (x == ginfo.width - 1) {rightValues = new TDoubleArrayList(height);}
 	}
 
 	@Override
 	public void run()
+    {
+		int happenedExchanges = 0;
+        while(!Thread.interrupted())
         {
-            while(!Thread.interrupted())
-            {
-                //if (x == 0) {leftValues = new TDoubleArrayList(height);}
-		//if (x == ginfo.width - 1) {rightValues = new TDoubleArrayList(height);}
         	performSteps();
         	exchange();
+        	happenedExchanges++;
+        	//System.out.println("Exchanges here at " + x + " : " + happenedExchanges);
+        	//if(!nodeList.isEmpty())
+        	//System.out.println("X-Coordinate: "+x + "; "+ nodeList.getFirst().toString());
         	stepsDone = 0;
-            }
-            System.out.println("Column "+ x + " Terminated.");
         }
+        System.out.println("Column "+x + " Terminated.");
+     }
 	
-        /**
-        * Iterates through the column
-        * 
-        */
+    /**
+    * Iterates through the column
+    * 
+    */
 	public void performSteps()
 	{
 		verticalConvergenceDetected = false;
-		if (leftValues != null)
-		{
-			leftValues.fill(0, height,0.0);
-		}
-		if (rightValues != null)
-		{
-			rightValues.fill(0, height, 0.0);
-		}
 		while(stepsDone < stepsTotal)
 		{
 			ListIterator<Node> iterator = nodeList.listIterator();
@@ -76,20 +67,12 @@ public class Column implements Runnable
 			{
 				Node currentNode = iterator.next();
 				valueSum += currentNode.getValue();
-				int y = currentNode.getY();
-				if (leftValues != null)
-				{
-					double leftChange = currentNode.emitLeft();
-					leftValues.set(y, leftValues.get(y) + leftChange);
-				}
-				if (rightValues != null)
-				{
-					double rightChange = currentNode.emitRight();
-					rightValues.set(y, rightValues.get(y) + rightChange);
-				}
-				
 				Node previous = currentNode.updatePrevious();
 				Node next = currentNode.updateNext();
+				if (!isLeftmost())
+					currentNode.emitIntoLeftAccu();
+				if (!isRightmost())
+					currentNode.emitIntoRightAccu();
 				if (previous != null)
 				{
 					Node previousPreviousCandidate = iterator.previous();
@@ -122,7 +105,7 @@ public class Column implements Runnable
 			}
 			
 			iterator = nodeList.listIterator();
-			double newEuclideanNorm = 0.0;
+			double newEuclideanNorm=0.0;
 			while(iterator.hasNext())
 			{
 				Node currentNode = iterator.next();
@@ -140,74 +123,120 @@ public class Column implements Runnable
 			else if (newEuclideanNorm < ConcOsmosis.getEpsilon())
 			{
 				verticalConvergenceDetected = true;
+				//TODO: All future steps until stepsDone could be skipped
 			}
 			stepsDone ++;
 		}
 	}
 	
 	/**
-        * Exchanges values with the left exchanger, then the right exchanger
-        */
+     * Exchanges values with the left exchanger, then the right exchanger
+     */
 	public void exchange()
 	{
+		TDoubleArrayList leftValues = null;
+		TDoubleArrayList rightValues = null;
+		
+		if (!isLeftmost())
+		{
+			leftValues = new TDoubleArrayList(height);
+			leftValues.fill(0, height,0.0);
+		}
+			
+		if (!isRightmost())
+		{
+			rightValues = new TDoubleArrayList(height, 0.0);
+			rightValues.fill(0, height,0.0);
+		}
+			
+		ListIterator<Node> iterator = nodeList.listIterator();
+		while(iterator.hasNext())
+		{
+			Node currentNode = iterator.next();
+			int y = currentNode.getY();
+			if(!isLeftmost())
+			{
+				leftValues.set(currentNode.getY(), currentNode.flushLeftAccu());
+			}
+			if (!isRightmost())
+			{
+				rightValues.set(currentNode.getY(), currentNode.flushRightAccu());
+			}
+		}
 		ValueBundle receivedFromLeft = null;
 		ValueBundle receivedFromRight = null;
 		int hConvergencesUntilHere = 0;
 		int vConvergencesUntilHere = 0;
 		int emptyColumnsUntilHere = 0;
 		int currentSteps = 1;
-                
-		try
-                {
-                    receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues));
-                    hConvergencesUntilHere = receivedFromLeft.getHConvergents();
-                    vConvergencesUntilHere = receivedFromLeft.getVConvergents();
-                    emptyColumnsUntilHere = receivedFromLeft.getEmptyColumns();
-                    currentSteps = receivedFromLeft.getCurrentSteps();
-                }
-                catch (InterruptedException e) {}
+		
+		//if(!isLeftmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
+			try {
+				receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues));
+				hConvergencesUntilHere = receivedFromLeft.getHConvergents();
+				vConvergencesUntilHere = receivedFromLeft.getVConvergents();
+				emptyColumnsUntilHere = receivedFromLeft.getEmptyColumns();
+				currentSteps = receivedFromLeft.getCurrentSteps();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		
 		boolean inflowIsOutflowLeft = false;
-		if(leftValues != null)
+		if(!isLeftmost())
 		{
 			double euclideanNorm = 0.0;
 			if (receivedFromLeft.getValues().sum() <= columnConsideredEmptyThreshold && leftValues.sum() <= columnConsideredEmptyThreshold)
-                        {inflowIsOutflowLeft = false;} //this one is certainly not horizontal convergent
+				inflowIsOutflowLeft = false; //this one is 
 			else
 			{
-                            for(int i=0; i < leftValues.size(); i++)
-                            {
-                                euclideanNorm += Math.pow((receivedFromLeft.getValues().get(i) - leftValues.get(i)), 2);
-                            }
-                            euclideanNorm = Math.sqrt(euclideanNorm);
-                            inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
+				for(int i=0; i < leftValues.size(); i++)
+				{
+					euclideanNorm += Math.pow((receivedFromLeft.getValues().get(i) - leftValues.get(i)), 2);
+				}
+				euclideanNorm = Math.sqrt(euclideanNorm);
+				inflowIsOutflowLeft = (euclideanNorm > ConcOsmosis.getEpsilon());
 			}
 		}
 		columnConvergenceDetected = inflowIsOutflowLeft;
-                
 		if (filledWithZeros)
-		{emptyColumnsUntilHere++;}
+		{
+			emptyColumnsUntilHere++;
+		}
 		else
 		{
 			if (columnConvergenceDetected)
-			{hConvergencesUntilHere++;}
+			{
+				hConvergencesUntilHere++;
+			}
 			if (verticalConvergenceDetected)
-			{vConvergencesUntilHere++;}
+			{
+				vConvergencesUntilHere++;
+			}
 		}
-                
-		try
-                {receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, hConvergencesUntilHere, vConvergencesUntilHere, emptyColumnsUntilHere, currentSteps));}
-                catch (InterruptedException e){}
+		
+			
+		//if(!isRightmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
+			try {
+				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, hConvergencesUntilHere, vConvergencesUntilHere, emptyColumnsUntilHere, currentSteps));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		
 		if (currentSteps == 0)
-		{Thread.currentThread().interrupt();}
+		{
+			Thread.currentThread().interrupt();
+		}
 		
-		if(leftValues!=null)
-		{receiveHorizontal(receivedFromLeft.getValues());}
-		if(rightValues!=null)
-		{receiveHorizontal(receivedFromRight.getValues());}
+		if(!isLeftmost())
+		{
+			receiveHorizontal(receivedFromLeft.getValues());
+		}
+		if(!isRightmost())
+		{
+			receiveHorizontal(receivedFromRight.getValues());
+		}
 			
-		ListIterator<Node> iterator = nodeList.listIterator();
+		iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
 			Node currentNode = iterator.next();
@@ -310,6 +339,16 @@ public class Column implements Runnable
 			}
 		}
 		initializeNode(node);
+	}
+	
+	public  boolean isLeftmost()
+	{
+		return (x == 0);
+	}
+
+	public boolean isRightmost()
+	{
+		return (x == ginfo.width - 1);
 	}
 	
 	/**
