@@ -153,13 +153,15 @@ public class Column implements Runnable
 		}
 		ValueBundle receivedFromLeft = null;
 		ValueBundle receivedFromRight = null;
-		int convergencesUntilHere = 0;
+		int hConvergencesUntilHere = 0;
+		int vConvergencesUntilHere = 0;
 		int currentSteps = 1;
 		
 		//if(!isLeftmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
-				receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues, 0, 0));
-				convergencesUntilHere = receivedFromLeft.getConvergents();
+				receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues));
+				hConvergencesUntilHere = receivedFromLeft.getHConvergents();
+				vConvergencesUntilHere = receivedFromLeft.getVConvergents();
 				currentSteps = receivedFromLeft.getCurrentSteps();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -167,13 +169,17 @@ public class Column implements Runnable
 		
 		if (columnConvergenceDetected)
 		{
-			convergencesUntilHere++;
+			hConvergencesUntilHere++;
+		}
+		if (verticalConvergenceDetected)
+		{
+			vConvergencesUntilHere++;
 		}
 			
 		
 		//if(!isRightmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
-				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, convergencesUntilHere, currentSteps));
+				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, hConvergencesUntilHere, vConvergencesUntilHere, currentSteps));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -182,7 +188,6 @@ public class Column implements Runnable
 		{
 			Thread.currentThread().interrupt();
 		}
-		boolean horizontalConvergencePossible = true;
 		boolean inflowIsOutflowLeft = false;
 		boolean inflowIsOutflowRight = false;
 		
@@ -195,7 +200,7 @@ public class Column implements Runnable
 			}
 			euclideanNorm = Math.sqrt(euclideanNorm);
 			inflowIsOutflowLeft = (euclideanNorm < epsilon);
-			receiveHorizontal(leftValues);
+			receiveHorizontal(receivedFromLeft.getValues());
 			//TODO: Currently each column calculates the euclideanNorm in both directions
 		}
 			
@@ -213,19 +218,12 @@ public class Column implements Runnable
 		}
 		
 		columnConvergenceDetected = inflowIsOutflowLeft || inflowIsOutflowRight;
-		
-		/*columnConvergenceDetected = false;
-		if (!nodeList.isEmpty() && horizontalConvergencePossible && verticalConvergenceDetected)
-		{
-			columnConvergenceDetected = true;
-		}*/
 			
 		iterator = nodeList.listIterator();
 		while(iterator.hasNext())
 		{
 			Node currentNode = iterator.next();
-			if (!currentNode.flush())
-				horizontalConvergencePossible = false;
+			currentNode.flush();
 		}
 		
 		stepsTotal = currentSteps;
