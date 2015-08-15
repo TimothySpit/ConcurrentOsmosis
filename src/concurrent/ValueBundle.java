@@ -22,6 +22,7 @@ public class ValueBundle
          * @param values the values which should be passed
          * @param hConvergents the number of horizontal convergent threads until now
          * @param vConvergents the number of vertical convergent threads until now
+         * @param emptyColumns the number of empty columns
          * @param currentSteps the number of steps the successor should use
          */
 	public ValueBundle(TDoubleArrayList values, int hConvergents ,int vConvergents, int emptyColumns,int currentSteps)

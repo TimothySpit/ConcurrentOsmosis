@@ -119,16 +119,17 @@ public class PseudoColumn
                     if((vConvergents + hConvergents) == 0)
                     {increaseSteps();}
                     
-                    else if((emptyColumns + vConvergents) < columnCount &&
-                            (emptyColumns + hConvergents) < (columnCount - 1))
-                    {
-                        reduceSteps();
-                        System.out.println("Steps: " + getSteps()+ "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
-                    }
-                    else
+                    else if((emptyColumns + vConvergents) == columnCount &&
+                            (emptyColumns + hConvergents) == (columnCount - 1))
                     {
                         signalTermination();
                         terminate = true;
+                    }
+                    
+                    else
+                    {
+                        reduceSteps();
+                        System.out.println("Steps: " + getSteps()+ "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
                     }
                     
                     if(plotteryStop && stepCount >= plottery)
