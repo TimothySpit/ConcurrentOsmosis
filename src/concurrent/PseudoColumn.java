@@ -114,7 +114,6 @@ public class PseudoColumn
                     int hConvergents = bundle.getHConvergents();
                     int vConvergents = bundle.getVConvergents();
                     int convergents = hConvergents + vConvergents;
-                    
                     if(convergents == 0)
                     {increaseSteps();}
                     else if(convergents < (columnCount*2))
