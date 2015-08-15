@@ -116,7 +116,7 @@ public class PseudoColumn
                     int vConvergents = bundle.getVConvergents();
                     int emptyColumns = bundle.getEmptyColumns();
                     
-                    if((vConvergents + hConvergents) == 0)
+                    if(hConvergents == 0)
                     {increaseSteps();}
                     
                     else if((emptyColumns + vConvergents) == columnCount &&
