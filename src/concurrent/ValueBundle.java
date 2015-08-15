@@ -5,7 +5,7 @@ import gnu.trove.list.array.TDoubleArrayList;
 /**
  * Bundle of values which is passed via Exchangers between different columns
  * 
- * @author Timo Speith & Magnus Halbe
+ * @author Timo Speith and Magnus Halbe
  * @version 1.2
  */
 public class ValueBundle

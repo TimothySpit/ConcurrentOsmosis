@@ -231,7 +231,7 @@ public class Column implements Runnable
 	 * Updates all nodes (and creates new ones if needed)
 	 * with values from another column
 	 * 
-	 * @param TDoubleArrayList the double values that were received
+	 * @param received TDoubleArrayList the double values that were received
 	 */
 	private void receiveHorizontal(TDoubleArrayList received)
 	{

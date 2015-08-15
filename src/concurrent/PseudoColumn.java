@@ -7,7 +7,7 @@ import java.util.concurrent.Exchanger;
  * It hosts two subclasses, one which manipulates the steps if it recognizes convergence,
  * the other which passes new step counts into the next round.
  * 
- * @author Timo Speith & Magnus Halbe
+ * @author Timo Speith and Magnus Halbe
  * @version 1.0
  */
 public class PseudoColumn
