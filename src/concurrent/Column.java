@@ -10,7 +10,6 @@ public class Column implements Runnable
 {
     private final int x;
     public static int height;
-    public static int epsilon;
     private GraphInfo ginfo;
     private boolean verticalConvergenceDetected;
     private boolean columnConvergenceDetected;
@@ -99,7 +98,7 @@ public class Column implements Runnable
 			}
 			
 			iterator = nodeList.listIterator();
-			double newEuclideanNorm=0;
+			double newEuclideanNorm=0.0;
 			while(iterator.hasNext())
 			{
 				Node currentNode = iterator.next();
@@ -109,7 +108,7 @@ public class Column implements Runnable
 				newEuclideanNorm += Math.pow(oldValue - newValue, 2.0);
 			}
 			newEuclideanNorm = Math.sqrt(newEuclideanNorm);
-			if (!nodeList.isEmpty() && newEuclideanNorm < epsilon)
+			if (!nodeList.isEmpty() && newEuclideanNorm < ConcOsmosis.getEpsilon())
 			{
 				verticalConvergenceDetected = true;
 				//TODO: All future steps until stepsDone could be skipped
@@ -176,7 +175,6 @@ public class Column implements Runnable
 			vConvergencesUntilHere++;
 		}
 			
-		
 		//if(!isRightmost()) //Is irrelevant. Exchanges with Column or PseudoColumn
 			try {
 				receivedFromRight = rightExchanger.exchange(new ValueBundle(rightValues, hConvergencesUntilHere, vConvergencesUntilHere, currentSteps));
@@ -199,7 +197,7 @@ public class Column implements Runnable
 				euclideanNorm += Math.pow((leftValues.get(i) - receivedFromLeft.getValues().get(i)), 2);
 			}
 			euclideanNorm = Math.sqrt(euclideanNorm);
-			inflowIsOutflowLeft = (euclideanNorm < epsilon);
+			inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
 			receiveHorizontal(receivedFromLeft.getValues());
 			//TODO: Currently each column calculates the euclideanNorm in both directions
 		}
@@ -212,7 +210,7 @@ public class Column implements Runnable
 				euclideanNorm += Math.pow((rightValues.get(i) - receivedFromRight.getValues().get(i)), 2);
 			}
 			euclideanNorm = Math.sqrt(euclideanNorm);
-			inflowIsOutflowRight = (euclideanNorm < epsilon);
+			inflowIsOutflowRight = (euclideanNorm < ConcOsmosis.getEpsilon());
 			receiveHorizontal(receivedFromRight.getValues());
 			//TODO: Currently each column calculates the euclideanNorm in both directions
 		}
