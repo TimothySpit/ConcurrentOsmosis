@@ -189,7 +189,7 @@ public class Column implements Runnable
 					euclideanNorm += Math.pow((receivedFromLeft.getValues().get(i) - leftValues.get(i)), 2);
 				}
 				euclideanNorm = Math.sqrt(euclideanNorm);
-				inflowIsOutflowLeft = (euclideanNorm > ConcOsmosis.getEpsilon());
+				inflowIsOutflowLeft = (euclideanNorm < ConcOsmosis.getEpsilon());
 			}
 		}
 		columnConvergenceDetected = inflowIsOutflowLeft;
