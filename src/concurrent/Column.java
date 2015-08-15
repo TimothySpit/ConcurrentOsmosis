@@ -60,11 +60,11 @@ public class Column implements Runnable
 		verticalConvergenceDetected = false;
 		while(stepsDone < stepsTotal)
 		{
-			boolean verticalConvergencePossible = true;
 			ListIterator<Node> iterator = nodeList.listIterator();
 			while(iterator.hasNext())
 			{
 				Node currentNode = iterator.next();
+				
 				Node previous = currentNode.updatePrevious();
 				Node next = currentNode.updateNext();
 				if (previous != null)
@@ -97,14 +97,19 @@ public class Column implements Runnable
 					}
 				}
 			}
+			
 			iterator = nodeList.listIterator();
+			double newEuclideanNorm=0;
 			while(iterator.hasNext())
 			{
 				Node currentNode = iterator.next();
-				if (!currentNode.flush())
-					verticalConvergencePossible = false;
+				double oldValue = currentNode.getValue();
+				currentNode.flush();
+				double newValue = currentNode.getValue();
+				newEuclideanNorm += Math.pow(oldValue - newValue, 2.0);
 			}
-			if (!nodeList.isEmpty() && verticalConvergencePossible)
+			newEuclideanNorm = Math.sqrt(newEuclideanNorm);
+			if (!nodeList.isEmpty() && newEuclideanNorm < epsilon)
 			{
 				verticalConvergenceDetected = true;
 				//TODO: All future steps until stepsDone could be skipped
@@ -162,7 +167,7 @@ public class Column implements Runnable
 		
 		if (columnConvergenceDetected)
 		{
-			//convergencesUntilHere++;
+			convergencesUntilHere++;
 		}
 			
 		
@@ -183,16 +188,28 @@ public class Column implements Runnable
 		
 		if(!isLeftmost())
 		{
-			inflowIsOutflowLeft = (receivedFromLeft.getValues().sum() - leftValues.sum() < epsilon);
-			receiveHorizontal(receivedFromLeft.getValues());
-			//TODO: Now each column checks the same thing as neighbour, fix
+			double euclideanNorm = 0.0;
+			for(int i=0; i < leftValues.size(); i++)
+			{
+				euclideanNorm += Math.pow((leftValues.get(i) - receivedFromLeft.getValues().get(i)), 2);
+			}
+			euclideanNorm = Math.sqrt(euclideanNorm);
+			inflowIsOutflowLeft = (euclideanNorm < epsilon);
+			receiveHorizontal(leftValues);
+			//TODO: Currently each column calculates the euclideanNorm in both directions
 		}
 			
 		if(!isRightmost())
 		{
-			inflowIsOutflowLeft = (receivedFromRight.getValues().sum() - rightValues.sum() < epsilon);
+			double euclideanNorm = 0.0;
+			for(int i=0; i < rightValues.size(); i++)
+			{
+				euclideanNorm += Math.pow((rightValues.get(i) - receivedFromRight.getValues().get(i)), 2);
+			}
+			euclideanNorm = Math.sqrt(euclideanNorm);
+			inflowIsOutflowRight = (euclideanNorm < epsilon);
 			receiveHorizontal(receivedFromRight.getValues());
-			//TODO: Now each column checks the same thing as neighbour, fix
+			//TODO: Currently each column calculates the euclideanNorm in both directions
 		}
 		
 		columnConvergenceDetected = inflowIsOutflowLeft || inflowIsOutflowRight;
