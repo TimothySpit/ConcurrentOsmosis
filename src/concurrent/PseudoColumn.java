@@ -116,7 +116,7 @@ public class PseudoColumn
                     int vConvergents = bundle.getVConvergents();
                     int emptyColumns = bundle.getEmptyColumns();
                     
-                    if(hConvergents == 0)
+                    if(hConvergents < columnCount-1)
                     {increaseSteps();}
                     
                     else if((emptyColumns + vConvergents) == columnCount &&
@@ -126,10 +126,15 @@ public class PseudoColumn
                         terminate = true;
                     }
                     
-                    else
+                    else if((hConvergents + emptyColumns) == (columnCount-1))
                     {
                         reduceSteps();
                         System.out.println("Steps: " + getSteps()+ "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
+                    }
+                    
+                    else
+                    {
+                        System.out.print("+ ");
                     }
                     
                     if(plotteryStop && stepCount >= plottery)
