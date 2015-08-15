@@ -126,7 +126,7 @@ public class PseudoColumn
                         terminate = true;
                     }
                     
-                    else if((hConvergents + emptyColumns) == (columnCount-1))
+                    else if((hConvergents + emptyColumns) >= (columnCount-1)/2)
                     {
                         reduceSteps();
                         System.out.println("Steps: " + getSteps()+ "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
