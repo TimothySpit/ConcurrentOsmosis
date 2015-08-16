@@ -2,11 +2,6 @@ package concurrent;
 
 import gnu.trove.list.array.TDoubleArrayList;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
 import java.util.concurrent.Exchanger;
 
 /**
@@ -50,10 +45,18 @@ public class PseudoColumn
     /**
      * Synchronized method to half the step count if the columns are convergent.
      */
-    private synchronized void reduceSteps()
+    private synchronized void decreaseSteps()
     {
         if(this.steps /2 > 0)
         {this.steps /= 2;}
+    }
+    
+    /**
+     * Synchronized method to set the step count to two for plotting.
+     */
+    private synchronized void forceTwo()
+    {
+        this.steps = 2;
     }
     
     /**
@@ -123,24 +126,31 @@ public class PseudoColumn
                     ValueBundle bundle = exchanger.exchange(null);
                     
                     int hConvergents = columnCount - bundle.getHConvergents();
-                    int vConvergents = bundle.getVConvergents();
                     TDoubleArrayList currentValues = bundle.getValues();
                     
-                    if (getSteps() == 1 && oldValues != null)
+                    // Euclidean norm is calculated, when convergence is detected
+                    if (getSteps() <= 4 && oldValues != null)
                     {
                     	double euclideanNorm = differenceNorm(oldValues, currentValues);
-                    	System.out.println(euclideanNorm);
                     	if (euclideanNorm < ConcOsmosis.getEpsilon())
                     	{
-                    		signalTermination(); terminate = true;
+                    		signalTermination();
+                                terminate = true;
                     	}
                     }
                     
+                    // Detect convergents
                     if(hConvergents == (columnCount - 1))
-                    {reduceSteps();}
+                    {decreaseSteps();}
+                    if(hConvergents == 0)
+                    {increaseSteps();}
+                    
+                    // Forcing steps to two, so that the overall values are passed.
+                    if(plottingEnabled && stepCount >= plottingInterval)
+                    {forceTwo();}
                     
                     // Plotting results
-                    if(plottingEnabled && stepCount >= plottingInterval)
+                    if(plottingEnabled && getSteps() <= 4)
                     {
                         final int i = painted;
                         final Converter c = new Converter(currentValues);
@@ -162,14 +172,10 @@ public class PseudoColumn
                 }
                 while(count != 0);
                 
-                // Signal termination
-                ConcOsmosis.LOCK.lock();
-                try
-                {
-                    ConcOsmosis.terminate = true;
-                    ConcOsmosis.CONDITION.signal();
-                }
-                finally {ConcOsmosis.LOCK.unlock();}
+                // Plot final version
+                TDoubleArrayList finalValues = vb.getValues();
+                final Converter c = new Converter(finalValues);
+                c.write2File("./result.txt");
             }
             catch(InterruptedException e){System.err.println("Interrupted Listener!");}
             finally{System.out.println("Listener Terminated");}
@@ -187,49 +193,6 @@ public class PseudoColumn
         	euclideanNorm = Math.sqrt(euclideanNorm);
         	return euclideanNorm;
         }
-        
-        /**
-         * Class for Outputs. Specified by project skeleton.
-         */
-        private class Converter implements ImageConvertible
-        {
-            private TDoubleArrayList values;
-            
-            public Converter(TDoubleArrayList values)
-            {
-                this.values = values;
-            }
-            
-            /**
-             * Returns the value of the node at the specified position.
-             * 
-             * @param column the column of the desired node
-             * @param row the row of the desired node
-             * @return the value of the node at the specified position
-             */
-            @Override
-            public double getValueAt(int column, int row)
-            {
-                return values.get(column * ConcOsmosis.getWidth() + row);
-            }
-            
-            public void write2File(String path2file)
-            {
-		StringBuilder builder = new StringBuilder();
-		for (int row=0;row<ConcOsmosis.getHeight();++row)
-                {
-			for (int column=0;column<ConcOsmosis.getWidth();++column)
-                        {
-				builder.append(getValueAt(column, row));
-				builder.append(" ");
-			}
-			builder.append("\n");
-		}
-		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path2file))))
-                {out.println(builder.toString());}
-                catch (IOException e) {}
-            }		
-	}
     }
     
     /**

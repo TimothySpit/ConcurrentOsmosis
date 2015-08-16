@@ -7,10 +7,9 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 import com.google.gson.Gson;
+
 import java.util.HashMap;
 import java.util.concurrent.Exchanger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class ConcOsmosis
 {
@@ -22,11 +21,6 @@ public class ConcOsmosis
         
         // Fixed maximum step count
         private final static int STEPS = 128;
-        
-        // Convergence tools
-        public static boolean terminate;
-        public static final ReentrantLock LOCK = new ReentrantLock();
-        public static final Condition CONDITION = LOCK.newCondition();
         
         // Colmn Creation tools
         private static Exchanger<ValueBundle> left;
@@ -106,23 +100,6 @@ public class ConcOsmosis
                 Thread lt = new Thread(leftPasser);
                 rt.start();
                 lt.start();
-                
-                // Wait for columns to terminate
-                LOCK.lock();
-                try
-                {
-                    while(!terminate)
-                    {
-                        CONDITION.await();
-                        LOCK.lock();
-                    }
-                }
-                finally {LOCK.unlock();}
-                System.out.println("Ende im Gelaende!");
-                
-                // Plotting the whole thing
-		ImageConvertible graph = new Converter();
-		ginfo.write2File("./result.txt", graph);
 	}
         
         /**
