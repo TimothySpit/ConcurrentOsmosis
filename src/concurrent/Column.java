@@ -112,7 +112,7 @@ public class Column implements Runnable
                 double oldValue = currentNode.getValue();
                 currentNode.flush();
                 double newValue = currentNode.getValue();
-                newEuclideanNorm += Math.pow(oldValue - newValue, 2.0);
+                newEuclideanNorm += Math.pow(oldValue - newValue, 2);
             }
             newEuclideanNorm = Math.sqrt(newEuclideanNorm);
             filledWithZeros = false;
