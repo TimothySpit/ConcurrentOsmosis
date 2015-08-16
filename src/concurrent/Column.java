@@ -100,7 +100,6 @@ public class Column implements Runnable
             
             // Writes the changes into the Nodes
             nodeList.stream().forEach((currentNode) -> {currentNode.flush();});
-            
             stepsDone++;
         }
     }
@@ -203,13 +202,16 @@ public class Column implements Runnable
     {
         ListIterator<Node> iterator = nodeList.listIterator();
         int previousIndex = -1;
+        
         //Updates all existing nodes, and creates new ones, if necessary
         while (iterator.hasNext())
         {
             Node currentNode = iterator.next();
             int y = currentNode.getY();
             // Checks for new nodes between existing ones
+            iterator.previous();
             littleLoop(previousIndex + 1, y, received, iterator);
+            iterator.next();
             previousIndex = y;
             currentNode.register(received.get(y));
         }
@@ -227,7 +229,7 @@ public class Column implements Runnable
      * @param received the values to be worked on
      * @param iterator the iterator which works on the nodes
      */
-    private void littleLoop(int begin, int end, TDoubleArrayList received, ListIterator iterator)
+    private void littleLoop(int begin, int end, TDoubleArrayList received, ListIterator<Node> iterator)
     {
         for (int index = begin; index < end; index++)
         {
@@ -278,7 +280,7 @@ public class Column implements Runnable
         // Move iterator to right place
         while (iterator.hasNext()) 
         {
-            if (iterator.next().getY() < goalY) {break;}
+            if (iterator.next().getY() >= goalY) {break;}
         }
         insertNode(iterator, node);
     }
