@@ -42,7 +42,7 @@ public class ValueBundle
          */
         public ValueBundle(int currentSteps)
         {
-            this(null, null, 0, 0, currentSteps);
+            this(new TDoubleArrayList(), null, 0, 0, currentSteps);
         }
 
         /**
@@ -62,7 +62,7 @@ public class ValueBundle
          */
 	public TDoubleArrayList getValues()
 	{
-            return pass;
+            return values;
 	}
 
         /**

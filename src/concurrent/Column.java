@@ -15,6 +15,7 @@ public class Column implements Runnable
     private boolean verticalConvergenceDetected;
     private boolean columnConvergenceDetected;
     private boolean filledWithZeros = true;
+    private TDoubleArrayList lastValues;
 
     private static final double columnConsideredEmptyThreshold = 0.0;
 
@@ -35,6 +36,8 @@ public class Column implements Runnable
         leftExchanger = left;
         rightExchanger = right;
         nodeList = new LinkedList<>();
+        lastValues = new TDoubleArrayList(height);
+        lastValues.fill(0, height, 0.0);
     }
 
     @Override
@@ -156,6 +159,7 @@ public class Column implements Runnable
         ValueBundle receivedFromRight = null;
         int hConvergencesUntilHere = 0;
         int vConvergencesUntilHere = 0;
+        TDoubleArrayList valuesToExchange = null;
         int currentSteps = 1;
         
         // Receive values from left neighbour
@@ -164,6 +168,7 @@ public class Column implements Runnable
             receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues));
             hConvergencesUntilHere = receivedFromLeft.getHConvergents();
             vConvergencesUntilHere = receivedFromLeft.getVConvergents();
+            valuesToExchange = receivedFromLeft.getValues();
             currentSteps = receivedFromLeft.getCurrentSteps();
         }
         catch (InterruptedException e) {}
@@ -174,7 +179,7 @@ public class Column implements Runnable
         {
             double euclideanNorm = 0.0;
             // Ignore nearly 0 columns. They are considered empty.
-            if (receivedFromLeft.getValues().sum() <= columnConsideredEmptyThreshold
+            if (receivedFromLeft.getPass().sum() <= columnConsideredEmptyThreshold
                     && leftValues.sum() <= columnConsideredEmptyThreshold)
             {inflowIsOutflowLeft = false;}
             // The real thing
@@ -182,7 +187,7 @@ public class Column implements Runnable
             {
                 for (int i = 0; i < leftValues.size(); i++)
                 {
-                    double difference = receivedFromLeft.getValues().get(i) - leftValues.get(i);
+                    double difference = receivedFromLeft.getPass().get(i) - leftValues.get(i);
                     euclideanNorm += Math.pow(difference, 2);
                 }
                 euclideanNorm = Math.sqrt(euclideanNorm);
@@ -194,11 +199,12 @@ public class Column implements Runnable
         columnConvergenceDetected = inflowIsOutflowLeft;
         if (columnConvergenceDetected)   {hConvergencesUntilHere++;}
         if (verticalConvergenceDetected) {vConvergencesUntilHere++;}
+        valuesToExchange.addAll(lastValues);
         
         // Receive values from right neighbour
         try
         {
-            ValueBundle pass = new ValueBundle(rightValues, hConvergencesUntilHere,
+            ValueBundle pass = new ValueBundle(valuesToExchange, rightValues, hConvergencesUntilHere,
                     vConvergencesUntilHere, currentSteps);
             receivedFromRight = rightExchanger.exchange(pass);
         }
@@ -208,12 +214,18 @@ public class Column implements Runnable
         if (currentSteps == 0) { Thread.currentThread().interrupt();} //TODO: Andere Terminierung
 
         // Calculate accumulators from neighbour columns in
-        if (!isLeftmost())  {receiveHorizontal(receivedFromLeft.getValues());}
-        if (!isRightmost()) {receiveHorizontal(receivedFromRight.getValues());}
+        if (!isLeftmost())  {receiveHorizontal(receivedFromLeft.getPass());}
+        if (!isRightmost()) {receiveHorizontal(receivedFromRight.getPass());}
+        
 
         // Writes all changes
-        nodeList.stream().forEach((currentNode) -> {currentNode.flush();});
-
+        lastValues.fill(0, height, 0.0);
+        for(Node currentNode: nodeList)
+        {
+        	currentNode.flush(); 
+         	lastValues.set(currentNode.getY(), currentNode.getValue());
+        }
+        
         stepsTotal = currentSteps;
     }
         

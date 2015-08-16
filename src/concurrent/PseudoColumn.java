@@ -1,5 +1,7 @@
 package concurrent;
 
+import gnu.trove.list.array.TDoubleArrayList;
+
 import java.util.concurrent.Exchanger;
 
 /**
@@ -84,6 +86,7 @@ public class PseudoColumn
     {
         // Exchanger which is shared with last column
         private final Exchanger<ValueBundle> exchanger;
+        private TDoubleArrayList oldValues;
         
         /**
          * Creates a listerner for the last column
@@ -114,20 +117,50 @@ public class PseudoColumn
                     
                     int hConvergents = columnCount - bundle.getHConvergents();
                     int vConvergents = bundle.getVConvergents();
+                    TDoubleArrayList currentValues = bundle.getValues();
+                    
                     
                     //System.out.println("Steps: " + stepCount + "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
                     boolean vCo = (vConvergents == columnCount);
                     boolean hCo = (hConvergents == (columnCount - 1));
                     //System.out.println( (vCo && hCo) + " " + terminate);
+                    
+                    
+                  //Total convergence watch
+                    if (getSteps() == 1 && oldValues != null)
+                    {
+                    	double euclideanNorm = differenceNorm(oldValues, currentValues);
+                    	System.out.println(euclideanNorm);
+                    	if (euclideanNorm < ConcOsmosis.getEpsilon())
+                    	{
+                    		signalTermination(); terminate = true;
+                    	}
+                    }
+                    	
+                  //Local convergence step control
+                    if (hConvergents < columnCount - 1)
+                    {
+                    	increaseSteps();
+                    }	
+                    else
+                    {
+                    	reduceSteps();
+                    }
+                    	
+                    
+                    
+                    /* Old system based on hConvergents and vConvergents
                     if(hConvergents == 0)
                     {increaseSteps();}
                     else if(vCo && hCo)
                     {signalTermination(); terminate = true;}
                     else if(hConvergents >= (columnCount-1))
-                    {}//reduceSteps();}
+                    {}//reduceSteps();}*/
                     
                     if(plotteryStop && stepCount >= plottery)
                     {signalTermination(); terminate = true;}
+                    
+                    oldValues = currentValues;
                 }
                 
                 // Wait for columns to pass 0 steps back.
@@ -152,6 +185,20 @@ public class PseudoColumn
             catch(InterruptedException e){System.err.println("Interrupted Listener!");}
             finally{System.out.println("Listener Terminated");}
         }
+        
+        
+        public double differenceNorm(TDoubleArrayList oldValues, TDoubleArrayList newValues)
+        {
+        	double euclideanNorm = 0.0;
+        	for(int i=0; i < newValues.size(); i++)
+        	{
+        		euclideanNorm += (oldValues.get(i) - 
+        				newValues.get(i)) * (oldValues.get(i) - newValues.get(i));
+        	}
+        	euclideanNorm = Math.sqrt(euclideanNorm);
+        	return euclideanNorm;
+        }
+        
     }
     
     /**
