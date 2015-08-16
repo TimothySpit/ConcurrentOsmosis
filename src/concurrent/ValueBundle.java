@@ -12,8 +12,7 @@ public class ValueBundle
 {
         private TDoubleArrayList values; // List of all values
 	private TDoubleArrayList pass; // List of values to pass
-	private int hConvergents = 0; // Number of horizontal convergent columns
-        private int vConvergents = 0; // Number of vertical convergent columns
+	private int convergents = 0; // Number of horizontal convergent columns
 	private int currentSteps; // Steps to use
 
         /**
@@ -22,16 +21,14 @@ public class ValueBundle
          * @param values the values of all nodes
          * @param pass the values which should be passed
          * @param hConvergents the number of horizontal convergent threads until now
-         * @param vConvergents the number of vertical convergent threads until now
          * @param currentSteps the number of steps the successor should use
          */
-	public ValueBundle(TDoubleArrayList values, TDoubleArrayList pass, int hConvergents,
-                int vConvergents, int currentSteps)
+	public ValueBundle(TDoubleArrayList values, TDoubleArrayList pass,
+                int hConvergents, int currentSteps)
         {
             this.values = values;
             this.pass = pass;
-            this.hConvergents = hConvergents;
-            this.vConvergents = vConvergents;
+            this.convergents = hConvergents;
             this.currentSteps = currentSteps;
 	}
 
@@ -42,7 +39,7 @@ public class ValueBundle
          */
         public ValueBundle(int currentSteps)
         {
-            this(new TDoubleArrayList(), null, 0, 0, currentSteps);
+            this(new TDoubleArrayList(), null, 0, currentSteps);
         }
 
         /**
@@ -52,7 +49,7 @@ public class ValueBundle
          */
         public ValueBundle(TDoubleArrayList pass)
         {
-            this(null, pass, 0, 0, 0);
+            this(null, pass, 0, 0);
         }
         
         /**
@@ -80,19 +77,9 @@ public class ValueBundle
          *
          * @return the horizontal convergent columns until this exchange
          */
-	public int getHConvergents()
+	public int getConvergents()
 	{
-            return hConvergents;
-	}
-
-        /**
-         * Returns the vertical convergent columns until this exchange
-         *
-         * @return the vertical convergent columns until this exchange
-         */
-	public int getVConvergents()
-	{
-            return vConvergents;
+            return convergents;
 	}
 
         /**

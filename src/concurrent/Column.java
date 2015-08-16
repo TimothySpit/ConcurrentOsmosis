@@ -9,15 +9,11 @@ import java.util.concurrent.Exchanger;
 public class Column implements Runnable
 {
     private final int x;
-    public static int height;
     private final GraphInfo ginfo;
 
-    private boolean verticalConvergenceDetected;
-    private boolean columnConvergenceDetected;
-    private boolean filledWithZeros = true;
-    private TDoubleArrayList lastValues;
-
-    private static final double columnConsideredEmptyThreshold = 0.0;
+    private boolean convergenceDetected;
+    
+    private final TDoubleArrayList lastValues;
 
     private int stepsTotal;
     private int stepsDone;
@@ -30,14 +26,13 @@ public class Column implements Runnable
     {
         x = xCoord;
         this.ginfo = ginfo;
-        height = ginfo.height;
         this.stepsTotal = stepsTotal;
         stepsDone = 0;
         leftExchanger = left;
         rightExchanger = right;
         nodeList = new LinkedList<>();
-        lastValues = new TDoubleArrayList(height);
-        lastValues.fill(0, height, 0.0);
+        lastValues = new TDoubleArrayList(ConcOsmosis.getHeight());
+        lastValues.fill(0, ConcOsmosis.getHeight(), 0.0);
     }
 
     @Override
@@ -57,21 +52,19 @@ public class Column implements Runnable
      */
     public void performSteps()
     {
-        verticalConvergenceDetected = false;
         while (stepsDone < stepsTotal)
         {
             ListIterator<Node> iterator = nodeList.listIterator();
-            double valueSum = 0.0;
             while (iterator.hasNext())
             {
                 Node currentNode = iterator.next();
-                valueSum += currentNode.getValue();
                 Node previous = currentNode.updatePrevious();
                 Node next = currentNode.updateNext();
                 
                 if (!isLeftmost())  {currentNode.emitIntoLeftAccu();}
                 if (!isRightmost()) {currentNode.emitIntoRightAccu();}
                 
+                // If a previous Node was created due to exchanges
                 if (previous != null)
                 {
                     Node previousPreviousCandidate = iterator.previous();
@@ -79,12 +72,14 @@ public class Column implements Runnable
                     iterator.next();
                     if (previousPreviousCandidate.getY() == previous.getY() - 1)
                     {
-                        //here the newly inserted node's previous neighbour gets informed
+                        // Here the newly inserted node's previous neighbour gets informed
                         previousPreviousCandidate.setNext(previous);
                         previous.setPrevious(previousPreviousCandidate);
                     }
                     initializeNode(previous);
                 }
+                
+                // If a next Node was creted due to exchanges
                 if (next != null)
                 {
                     iterator.add(next);
@@ -94,7 +89,7 @@ public class Column implements Runnable
                         Node nextNextCandidate = iterator.next();
                         if (nextNextCandidate.getY() == next.getY() + 1)
                         {
-                            //here the newly inserted node's potential next neighbour gets informed
+                            // Here the newly inserted node's potential next neighbour gets informed
                             nextNextCandidate.setPrevious(next);
                             next.setNext(nextNextCandidate);
                         }
@@ -102,24 +97,9 @@ public class Column implements Runnable
                     }
                 }
             }
-
-            //Calculates convergence
-            iterator = nodeList.listIterator();
-            double newEuclideanNorm = 0.0;
-            while (iterator.hasNext())
-            {
-                Node currentNode = iterator.next();
-                double oldValue = currentNode.getValue();
-                currentNode.flush();
-                double newValue = currentNode.getValue();
-                newEuclideanNorm += Math.pow(oldValue - newValue, 2);
-            }
-            newEuclideanNorm = Math.sqrt(newEuclideanNorm);
-            filledWithZeros = false;
-            if (valueSum <= columnConsideredEmptyThreshold)
-            {filledWithZeros = true;}
-            else if (newEuclideanNorm < ConcOsmosis.getEpsilon())
-            {verticalConvergenceDetected = true;}
+            
+            // Writes the changes into the Nodes
+            nodeList.stream().forEach((currentNode) -> {currentNode.flush();});
             
             stepsDone++;
         }
@@ -136,29 +116,30 @@ public class Column implements Runnable
         // Creates acuumulator list for right neighbours if existent
         if (!isLeftmost())
         {
-            leftValues = new TDoubleArrayList(height);
-            leftValues.fill(0, height, 0.0);
+            leftValues = new TDoubleArrayList(ConcOsmosis.getHeight());
+            leftValues.fill(0, ConcOsmosis.getHeight(), 0.0);
         }
 
         // Creates acuumulator list for right neighbours if existent
         if (!isRightmost())
         {
-            rightValues = new TDoubleArrayList(height, 0.0);
-            rightValues.fill(0, height, 0.0);
+            rightValues = new TDoubleArrayList(ConcOsmosis.getHeight(), 0.0);
+            rightValues.fill(0, ConcOsmosis.getHeight(), 0.0);
         }
 
         // Creates accumulator lists
         for(Node currentNode: nodeList)
         {
             int y = currentNode.getY();
-            if (!isLeftmost())  {leftValues.set(y, currentNode.flushLeftAccu());}
-            if (!isRightmost()) {rightValues.set(y, currentNode.flushRightAccu());}
+            if (leftValues != null)  {leftValues.set(y, currentNode.flushLeftAccu());}
+            if (rightValues != null) {rightValues.set(y, currentNode.flushRightAccu());}
         }
         
         ValueBundle receivedFromLeft = null;
         ValueBundle receivedFromRight = null;
-        int hConvergencesUntilHere = 0;
-        int vConvergencesUntilHere = 0;
+        
+        int convergencesUntilHere = 0;
+        
         TDoubleArrayList valuesToExchange = null;
         int currentSteps = 1;
         
@@ -166,46 +147,43 @@ public class Column implements Runnable
         try
         {
             receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues));
-            hConvergencesUntilHere = receivedFromLeft.getHConvergents();
-            vConvergencesUntilHere = receivedFromLeft.getVConvergents();
+            convergencesUntilHere = receivedFromLeft.getConvergents();
             valuesToExchange = receivedFromLeft.getValues();
             currentSteps = receivedFromLeft.getCurrentSteps();
         }
         catch (InterruptedException e) {}
 
+        /* Old Norm Calculating
         // Calculating euclidean Norm
         boolean inflowIsOutflowLeft = false;
         if (!isLeftmost())
         {
             double euclideanNorm = 0.0;
-            // Ignore nearly 0 columns. They are considered empty.
-            if (receivedFromLeft.getPass().sum() <= columnConsideredEmptyThreshold
-                    && leftValues.sum() <= columnConsideredEmptyThreshold)
-            {inflowIsOutflowLeft = false;}
-            // The real thing
-            else
+            for (int i = 0; i < leftValues.size(); i++)
             {
-                for (int i = 0; i < leftValues.size(); i++)
-                {
-                    double difference = receivedFromLeft.getPass().get(i) - leftValues.get(i);
-                    euclideanNorm += Math.pow(difference, 2);
-                }
-                euclideanNorm = Math.sqrt(euclideanNorm);
-                inflowIsOutflowLeft = (euclideanNorm > ConcOsmosis.getEpsilon());
+                double difference = receivedFromLeft.getPass().get(i) - leftValues.get(i);
+                euclideanNorm += difference*difference;
             }
+            euclideanNorm = Math.sqrt(euclideanNorm);
+            inflowIsOutflowLeft = (euclideanNorm > ConcOsmosis.getEpsilon());
+        }*/
+        boolean inflowIsOutflowLeft = false;
+        if (!isLeftmost())
+        {
+            double newVal = receivedFromLeft.getPass().sum();
+            double oldVal = leftValues.sum();
+            inflowIsOutflowLeft = Math.abs(newVal-oldVal) < ConcOsmosis.getEpsilon();
         }
-        
         // Convergence calculating
-        columnConvergenceDetected = inflowIsOutflowLeft;
-        if (columnConvergenceDetected)   {hConvergencesUntilHere++;}
-        if (verticalConvergenceDetected) {vConvergencesUntilHere++;}
-        valuesToExchange.addAll(lastValues);
+        convergenceDetected = inflowIsOutflowLeft;
+        if (convergenceDetected)   {convergencesUntilHere++;}
+        if (currentSteps <= 4) {valuesToExchange.addAll(lastValues);}
         
         // Receive values from right neighbour
         try
         {
-            ValueBundle pass = new ValueBundle(valuesToExchange, rightValues, hConvergencesUntilHere,
-                    vConvergencesUntilHere, currentSteps);
+            ValueBundle pass = new ValueBundle(valuesToExchange, rightValues,
+                    convergencesUntilHere, currentSteps);
             receivedFromRight = rightExchanger.exchange(pass);
         }
         catch (InterruptedException e) {}
@@ -219,7 +197,7 @@ public class Column implements Runnable
         
 
         // Writes all changes
-        lastValues.fill(0, height, 0.0);
+        lastValues.fill(0, ConcOsmosis.getHeight(), 0.0);
         for(Node currentNode: nodeList)
         {
         	currentNode.flush(); 
@@ -250,7 +228,7 @@ public class Column implements Runnable
             currentNode.register(received.get(y));
         }
         // The end could have new nodes, too
-        littleLoop(previousIndex + 1, height, received, iterator);
+        littleLoop(previousIndex + 1, ConcOsmosis.getHeight(), received, iterator);
     }
    
     /**
@@ -388,8 +366,8 @@ public class Column implements Runnable
      */
     public TDoubleArrayList getNodeValues()
     {
-        TDoubleArrayList values = new TDoubleArrayList(height);
-        values.fill(0, height, 0.0);
+        TDoubleArrayList values = new TDoubleArrayList(ConcOsmosis.getHeight());
+        values.fill(0, ConcOsmosis.getHeight(), 0.0);
         nodeList.stream().forEach((currentNode) -> 
         {values.set(currentNode.getY(), currentNode.getValue());});
         return values;

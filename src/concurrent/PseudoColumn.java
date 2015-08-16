@@ -125,7 +125,7 @@ public class PseudoColumn
                     
                     ValueBundle bundle = exchanger.exchange(null);
                     
-                    int hConvergents = columnCount - bundle.getHConvergents();
+                    int convergents = columnCount - bundle.getConvergents();
                     TDoubleArrayList currentValues = bundle.getValues();
                     
                     // Euclidean norm is calculated, when convergence is detected
@@ -140,9 +140,9 @@ public class PseudoColumn
                     }
                     
                     // Detect convergents
-                    if(hConvergents == (columnCount - 1))
+                    if(convergents == (columnCount - 1))
                     {decreaseSteps();}
-                    if(hConvergents == 0)
+                    if(convergents == 0)
                     {increaseSteps();}
                     
                     // Forcing steps to two, so that the overall values are passed.
