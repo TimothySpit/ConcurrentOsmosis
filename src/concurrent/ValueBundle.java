@@ -10,7 +10,7 @@ import gnu.trove.list.array.TDoubleArrayList;
  */
 public class ValueBundle
 {
-        private TDoubleArrayList values;
+        private TDoubleArrayList values; // List of all values
 	private TDoubleArrayList pass; // List of values to pass
 	private int hConvergents = 0; // Number of horizontal convergent columns
         private int vConvergents = 0; // Number of vertical convergent columns

@@ -2,6 +2,11 @@ package concurrent;
 
 import gnu.trove.list.array.TDoubleArrayList;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 import java.util.concurrent.Exchanger;
 
 /**
@@ -22,9 +27,11 @@ public class PseudoColumn
     // Current step count. Halfed if convergent, doubled if not convergent.
     private int steps;
     
+    // Vaiables for periodical plotting
     private int stepCount = 0;
-    private final int plottery = 10000;
-    private final boolean plotteryStop = false;
+    private final int plottingInterval = 10000;
+    private int painted = 0;
+    private final boolean plottingEnabled = false;
     
     /**
      * Creates a new PseudoColumn with a specified maximal step count.
@@ -119,14 +126,6 @@ public class PseudoColumn
                     int vConvergents = bundle.getVConvergents();
                     TDoubleArrayList currentValues = bundle.getValues();
                     
-                    
-                    //System.out.println("Steps: " + stepCount + "; Convergent: H: " + hConvergents + ", V: " + vConvergents + ", E: " + emptyColumns);
-                    boolean vCo = (vConvergents == columnCount);
-                    boolean hCo = (hConvergents == (columnCount - 1));
-                    //System.out.println( (vCo && hCo) + " " + terminate);
-                    
-                    
-                  //Total convergence watch
                     if (getSteps() == 1 && oldValues != null)
                     {
                     	double euclideanNorm = differenceNorm(oldValues, currentValues);
@@ -136,29 +135,19 @@ public class PseudoColumn
                     		signalTermination(); terminate = true;
                     	}
                     }
-                    	
-                  //Local convergence step control
-                    if (hConvergents < columnCount - 1)
+                    
+                    if(hConvergents == (columnCount - 1))
+                    {reduceSteps();}
+                    
+                    // Plotting results
+                    if(plottingEnabled && stepCount >= plottingInterval)
                     {
-                    	increaseSteps();
-                    }	
-                    else
-                    {
-                    	reduceSteps();
+                        final int i = painted;
+                        final Converter c = new Converter(currentValues);
+                        new Thread(() -> {c.write2File("./results/result" + i + ".txt");}).start();
+                        stepCount = 0;
+                        painted++;
                     }
-                    	
-                    
-                    
-                    /* Old system based on hConvergents and vConvergents
-                    if(hConvergents == 0)
-                    {increaseSteps();}
-                    else if(vCo && hCo)
-                    {signalTermination(); terminate = true;}
-                    else if(hConvergents >= (columnCount-1))
-                    {}//reduceSteps();}*/
-                    
-                    if(plotteryStop && stepCount >= plottery)
-                    {signalTermination(); terminate = true;}
                     
                     oldValues = currentValues;
                 }
@@ -199,6 +188,48 @@ public class PseudoColumn
         	return euclideanNorm;
         }
         
+        /**
+         * Class for Outputs. Specified by project skeleton.
+         */
+        private class Converter implements ImageConvertible
+        {
+            private TDoubleArrayList values;
+            
+            public Converter(TDoubleArrayList values)
+            {
+                this.values = values;
+            }
+            
+            /**
+             * Returns the value of the node at the specified position.
+             * 
+             * @param column the column of the desired node
+             * @param row the row of the desired node
+             * @return the value of the node at the specified position
+             */
+            @Override
+            public double getValueAt(int column, int row)
+            {
+                return values.get(column * ConcOsmosis.getWidth() + row);
+            }
+            
+            public void write2File(String path2file)
+            {
+		StringBuilder builder = new StringBuilder();
+		for (int row=0;row<ConcOsmosis.getHeight();++row)
+                {
+			for (int column=0;column<ConcOsmosis.getWidth();++column)
+                        {
+				builder.append(getValueAt(column, row));
+				builder.append(" ");
+			}
+			builder.append("\n");
+		}
+		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(path2file))))
+                {out.println(builder.toString());}
+                catch (IOException e) {}
+            }		
+	}
     }
     
     /**

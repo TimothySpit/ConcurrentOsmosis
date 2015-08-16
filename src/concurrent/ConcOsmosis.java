@@ -18,7 +18,7 @@ public class ConcOsmosis
         
         private static double epsilon;
         
-        private static int width;
+        private static int width, height;
         
         // Fixed maximum step count
         private final static int STEPS = 128;
@@ -53,6 +53,7 @@ public class ConcOsmosis
 		ginfo = gson.fromJson(json, GraphInfo.class);
                 
                 width = ginfo.width;
+                height = ginfo.height;
                 epsilon = ginfo.epsilon;
                 
                 columns = new Column[width];
@@ -153,6 +154,26 @@ public class ConcOsmosis
         public static double getEpsilon()
         {
             return epsilon;
+        }
+        
+        /**
+         * Returns width
+         * 
+         * @return width
+         */
+        public static int getWidth()
+        {
+            return width;
+        }
+        
+        /**
+         * Returns width
+         * 
+         * @return width
+         */
+        public static int getHeight()
+        {
+            return height;
         }
         
         /**
