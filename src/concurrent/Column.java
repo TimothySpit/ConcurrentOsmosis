@@ -156,7 +156,6 @@ public class Column implements Runnable
         ValueBundle receivedFromRight = null;
         int hConvergencesUntilHere = 0;
         int vConvergencesUntilHere = 0;
-        int emptyColumnsUntilHere = 0;
         int currentSteps = 1;
         
         // Receive values from left neighbour
@@ -165,7 +164,6 @@ public class Column implements Runnable
             receivedFromLeft = leftExchanger.exchange(new ValueBundle(leftValues));
             hConvergencesUntilHere = receivedFromLeft.getHConvergents();
             vConvergencesUntilHere = receivedFromLeft.getVConvergents();
-            emptyColumnsUntilHere = receivedFromLeft.getEmptyColumns();
             currentSteps = receivedFromLeft.getCurrentSteps();
         }
         catch (InterruptedException e) {}
@@ -194,18 +192,14 @@ public class Column implements Runnable
         
         // Convergence calculating
         columnConvergenceDetected = inflowIsOutflowLeft;
-        if (filledWithZeros) { emptyColumnsUntilHere++;}
-        else
-        {
-            if (columnConvergenceDetected)   {hConvergencesUntilHere++;}
-            if (verticalConvergenceDetected) {vConvergencesUntilHere++;}
-        }
+        if (columnConvergenceDetected)   {hConvergencesUntilHere++;}
+        if (verticalConvergenceDetected) {vConvergencesUntilHere++;}
         
         // Receive values from right neighbour
         try
         {
             ValueBundle pass = new ValueBundle(rightValues, hConvergencesUntilHere,
-                    vConvergencesUntilHere, emptyColumnsUntilHere, currentSteps);
+                    vConvergencesUntilHere, currentSteps);
             receivedFromRight = rightExchanger.exchange(pass);
         }
         catch (InterruptedException e) {}
@@ -213,7 +207,7 @@ public class Column implements Runnable
         // Termination is signaled by 0 steps
         if (currentSteps == 0) { Thread.currentThread().interrupt();} //TODO: Andere Terminierung
 
-        // Colculate accumulators from neighbour ncolumns in
+        // Calculate accumulators from neighbour columns in
         if (!isLeftmost())  {receiveHorizontal(receivedFromLeft.getValues());}
         if (!isRightmost()) {receiveHorizontal(receivedFromRight.getValues());}
 
@@ -221,47 +215,6 @@ public class Column implements Runnable
         nodeList.stream().forEach((currentNode) -> {currentNode.flush();});
 
         stepsTotal = currentSteps;
-    }
-
-    /**
-     * Updates all nodes (and creates new ones if needed) with values from
-     * another column
-     *
-     * @param received TDoubleArrayList the double values that were received
-     */
-    private void receiveHorizontalAlternative(TDoubleArrayList received)
-    {
-        ListIterator<Node> iterator = nodeList.listIterator();
-        
-        Node currentNode = null;
-        Node nextNode = null;
-        
-        int y = -1;
-        
-        for(int index = 0; index < height; index++)
-        {
-            if(iterator.hasNext() && nextNode == null)
-            {
-                nextNode = iterator.next();
-            }
-            
-            if(y < index && nextNode != null)
-            {
-                currentNode = nextNode;
-                y = currentNode.getY();
-                nextNode = null;
-            }
-            
-            if(y == index)
-            {currentNode.register(received.get(y));}
-            
-            double value = received.get(index);
-            if (value > 0.0)
-            {
-                Node newNode = new Node(value, index);
-                insertNode(iterator, newNode);
-            }
-        }
     }
         
      /**
@@ -280,21 +233,27 @@ public class Column implements Runnable
             Node currentNode = iterator.next();
             int y = currentNode.getY();
             // Checks for new nodes between existing ones
-            for (int index = previousIndex + 1; index < y; index++)
-            {
-                double value = received.get(index);
-                if (value > 0.0)
-                {
-                    Node newNode = new Node(value, index);
-                    insertNode(iterator, newNode);
-                }
-            }
+            littleLoop(previousIndex + 1, y, received, iterator);
             previousIndex = y;
             currentNode.register(received.get(y));
         }
-        
         // The end could have new nodes, too
-        for (int index = previousIndex + 1; index < height; index++)
+        littleLoop(previousIndex + 1, height, received, iterator);
+    }
+   
+    /**
+     * Searches a specific number of entries in a list consisting of values and
+     * creates Nodes, if the value is greater 0.0. The node is inserted into
+     * the original node list.
+     * 
+     * @param begin the index to begin with (inclusive)
+     * @param end the index to end with (exclusive)
+     * @param received the values to be worked on
+     * @param iterator the iterator which works on the nodes
+     */
+    private void littleLoop(int begin, int end, TDoubleArrayList received, ListIterator iterator)
+    {
+        for (int index = begin; index < end; index++)
         {
             double value = received.get(index);
             if (value > 0.0)
