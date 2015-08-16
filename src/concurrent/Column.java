@@ -247,7 +247,7 @@ public class Column implements Runnable
      */
     private void initializeNode(Node node)
     {
-        System.out.println("neue Node" + x + " | " + node.getY()); //TODO entfernen
+        System.out.println("neue Node" + x + " | " + node.getY());
 
         int y = node.getY();
 
@@ -278,7 +278,7 @@ public class Column implements Runnable
         // Move iterator to right place
         while (iterator.hasNext()) 
         {
-            if (iterator.next().getY() >= goalY) {break;}
+            if (iterator.next().getY() < goalY) {break;}
         }
         insertNode(iterator, node);
     }
