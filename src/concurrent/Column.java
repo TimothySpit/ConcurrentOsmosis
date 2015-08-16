@@ -357,19 +357,4 @@ public class Column implements Runnable
     {
         return (x == ginfo.width - 1);
     }
-
-    /**
-     * Returns a TDoubleArrayList of size height with the values of this column
-     * 
-     * @return a TDoubleArrayList of size height with the value of existing
-     * nodes, where nodes exist, 0.0 everywhere else
-     */
-    private TDoubleArrayList getNodeValues()
-    {
-        TDoubleArrayList values = new TDoubleArrayList(ConcOsmosis.getHeight());
-        values.fill(0, ConcOsmosis.getHeight(), 0.0);
-        nodeList.stream().forEach((currentNode) -> 
-        {values.set(currentNode.getY(), currentNode.getValue());});
-        return values;
-    }
 }
