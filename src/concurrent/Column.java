@@ -272,7 +272,6 @@ public class Column implements Runnable
      */
     public synchronized void insertNode(Node node)
     {
-        ListIterator iter = nodeList.listIterator();
         int goalY = node.getY();
         ListIterator<Node> iterator = nodeList.listIterator();
         
@@ -281,7 +280,7 @@ public class Column implements Runnable
         {
             if (iterator.next().getY() >= goalY) {break;}
         }
-        insertNode(iter, node);
+        insertNode(iterator, node);
     }
 
     /**
