@@ -26,7 +26,7 @@ public class PseudoColumn
     private int stepCount = 0;
     private final int plottingInterval = 10000;
     private int painted = 0;
-    private final boolean plottingEnabled = false;
+    private final boolean plottingEnabled = true;
     
     /**
      * Creates a new PseudoColumn with a specified maximal step count.
@@ -128,14 +128,10 @@ public class PseudoColumn
                     
                     int convergents = bundle.getConvergents();
                     TDoubleArrayList currentValues = bundle.getValues();
-                    //System.out.println("Konvergenz: " + convergents);
                     // Euclidean norm is calculated, when convergence is detected
                     if (getSteps() <= 4 && !oldValues.isEmpty())
                     {
-                        System.out.println("Alt: " + oldValues.toString());
-                        System.out.println("Neu: " + currentValues.toString());
                     	double euclideanNorm = differenceNorm(oldValues, currentValues);
-                        System.out.println("Norm: " + euclideanNorm);
                     	if (euclideanNorm < ConcOsmosis.getEpsilon())
                     	{
                     		signalTermination();
@@ -146,21 +142,23 @@ public class PseudoColumn
                     // Detect convergents
                     if(convergents == (columnCount - 1))
                     {decreaseSteps();}
-                    if(convergents == 0)
+                    else
                     {increaseSteps();}
                     
-                    // Forcing steps to two, so that the overall values are passed.
-                    if(plottingEnabled && stepCount >= plottingInterval)
-                    {forceTwo(); System.out.println("Two geforct");}
-                    
                     // Plotting results
-                    if(plottingEnabled && getSteps() <= 4)
+                    if(plottingEnabled && stepCount >= plottingInterval && !currentValues.isEmpty())
                     {
                         final int i = painted;
                         final Converter c = new Converter(currentValues);
                         new Thread(() -> {c.write2File("./results/result" + i + ".txt");}).start();
                         stepCount = 0;
                         painted++;
+                    }
+                    
+                    // Forcing steps to two, so that the overall values are passed.
+                    if(plottingEnabled && stepCount >= plottingInterval)
+                    {
+                        forceTwo();
                     }
                     
                     oldValues = currentValues;
