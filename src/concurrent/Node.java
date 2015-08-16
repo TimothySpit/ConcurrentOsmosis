@@ -17,7 +17,7 @@ public class Node
     //the accumulator for the left output
     private double leftAccu;
     
-  //the accumulator for the left output
+    //the accumulator for the left output
     private double rightAccu;
     //y-coordinate of this Node in its specific column
     private final int y;
