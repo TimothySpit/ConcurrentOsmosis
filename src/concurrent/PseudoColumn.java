@@ -106,6 +106,7 @@ public class PseudoColumn
         public LeftListener(Exchanger<ValueBundle> ex)
         {
             exchanger = ex;
+            oldValues = new TDoubleArrayList();
         }
         
         /**
@@ -125,13 +126,16 @@ public class PseudoColumn
                     
                     ValueBundle bundle = exchanger.exchange(null);
                     
-                    int convergents = columnCount - bundle.getConvergents();
+                    int convergents = bundle.getConvergents();
                     TDoubleArrayList currentValues = bundle.getValues();
-                    
+                    //System.out.println("Konvergenz: " + convergents);
                     // Euclidean norm is calculated, when convergence is detected
-                    if (getSteps() <= 4 && oldValues != null)
+                    if (getSteps() <= 4 && !oldValues.isEmpty())
                     {
+                        System.out.println("Alt: " + oldValues.toString());
+                        System.out.println("Neu: " + currentValues.toString());
                     	double euclideanNorm = differenceNorm(oldValues, currentValues);
+                        System.out.println("Norm: " + euclideanNorm);
                     	if (euclideanNorm < ConcOsmosis.getEpsilon())
                     	{
                     		signalTermination();
@@ -147,7 +151,7 @@ public class PseudoColumn
                     
                     // Forcing steps to two, so that the overall values are passed.
                     if(plottingEnabled && stepCount >= plottingInterval)
-                    {forceTwo();}
+                    {forceTwo(); System.out.println("Two geforct");}
                     
                     // Plotting results
                     if(plottingEnabled && getSteps() <= 4)
@@ -160,6 +164,7 @@ public class PseudoColumn
                     }
                     
                     oldValues = currentValues;
+                    
                 }
                 
                 // Wait for columns to pass 0 steps back.
@@ -178,7 +183,6 @@ public class PseudoColumn
                 c.write2File("./result.txt");
             }
             catch(InterruptedException e){System.err.println("Interrupted Listener!");}
-            finally{System.out.println("Listener Terminated");}
         }
         
         
@@ -232,7 +236,6 @@ public class PseudoColumn
                 }
             }
             catch(InterruptedException e){System.err.println("Interrupted Passer!");}
-            finally{System.out.println("Passer Terminated");}
         }
     }
 }
