@@ -71,7 +71,7 @@ public class ConcOsmosis
                 int column = keys.iterator().next();
                 HashMap<Integer, Double> valueMap = ginfo.column2row2initialValue.get(column);
                 Set<Integer> keys2 = valueMap.keySet();
-                int row = keys.iterator().next();
+                int row = keys2.iterator().next();
                 double value = valueMap.get(row);
                 
                 // Create all Column
