@@ -153,20 +153,6 @@ public class Column implements Runnable
         }
         catch (InterruptedException e) {}
 
-        /* Old Norm Calculating
-        // Calculating euclidean Norm
-        boolean inflowIsOutflowLeft = false;
-        if (!isLeftmost())
-        {
-            double euclideanNorm = 0.0;
-            for (int i = 0; i < leftValues.size(); i++)
-            {
-                double difference = receivedFromLeft.getPass().get(i) - leftValues.get(i);
-                euclideanNorm += difference*difference;
-            }
-            euclideanNorm = Math.sqrt(euclideanNorm);
-            inflowIsOutflowLeft = (euclideanNorm > ConcOsmosis.getEpsilon());
-        }*/
         boolean inflowIsOutflowLeft = false;
         if (!isLeftmost())
         {
@@ -176,8 +162,8 @@ public class Column implements Runnable
         }
         // Convergence calculating
         convergenceDetected = inflowIsOutflowLeft;
-        if (convergenceDetected)   {convergencesUntilHere++;}
-        if (currentSteps <= 4) {valuesToExchange.addAll(lastValues);}
+        if (convergenceDetected) {convergencesUntilHere++;}
+        if (currentSteps <= 4)   {valuesToExchange.addAll(lastValues);}
         
         // Receive values from right neighbour
         try
@@ -308,8 +294,8 @@ public class Column implements Runnable
      */
     private synchronized void insertNode(ListIterator<Node> iterator, Node node)
     {
-        int index = nodeList.indexOf(node); // TODO: equals method for Nodes?
         iterator.add(node);
+        int index = nodeList.indexOf(node);
         Node candidate;
         
         // If this node is not the first, it could have a predecessor
