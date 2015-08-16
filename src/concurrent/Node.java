@@ -22,7 +22,7 @@ public class Node
     //y-coordinate of this Node in its specific column
     private final int y;
     
-    //This nodes pedecessing neighbour
+    //This nodes predecessing neighbour
     private Node previous;
     //This nodes successing neighbour
     private Node next;
@@ -138,7 +138,7 @@ public class Node
     }
     
     /**
-     * Registers a specific amount of this Nodes value that would be passed to the Node
+     * Registers a specific amount of this Node's value that would be passed to the Node
      * lying east of it and saves the change in accuLeft
      * 
      */
@@ -151,8 +151,8 @@ public class Node
     }
     
     /**
-     * Registers a specific amount of this Nodes value that would be passed to the Node
-     * lying west of it and saves it in accuRight;
+     * Registers a specific amount of this Node's value that would be passed to the Node
+     * lying west of it and saves the change in accuRight;
      * 
      */
     public void emitIntoRightAccu()
@@ -186,7 +186,7 @@ public class Node
     }
     /**
      * Method to be invoked every turn. Calculates the changes made during the turn
-     * to this nodes value.
+     * to this node's value.
      */
     public void flush()
     {
@@ -206,9 +206,9 @@ public class Node
     }
     
     /**
-     * Returns this nodes previous node if it exists
+     * Returns this node's previous node if it exists
      * 
-     * @return this nodes previous Node
+     * @return this node's previous Node
      */
     public Node getPrevious() 
     {
@@ -216,7 +216,7 @@ public class Node
     }
     
     /**
-     * Sets this nodes previous Node
+     * Sets this node's previous Node
      * 
      * @param previous the node to be set as previous
      */
@@ -226,9 +226,9 @@ public class Node
     }
 
     /**
-     * Returns this nodes next node if it exists
+     * Returns this node's next node if it exists
      * 
-     * @return this nodes next Node
+     * @return this node's next Node
      */
     public Node getNext()
     {
@@ -236,7 +236,7 @@ public class Node
     }
     
     /**
-     * Sets this nodes next Node
+     * Sets this node's next Node
      * 
      * @param next the node to be set as next
      */

@@ -22,6 +22,7 @@ public class Column implements Runnable
     
     private final TDoubleArrayList lastValues;
 
+    private boolean terminate;
     private int stepsTotal;
     private int stepsDone;
 
@@ -57,13 +58,13 @@ public class Column implements Runnable
     @Override
     public void run()
     {
-        while (!Thread.interrupted())
+    	terminate = false;
+        while (!terminate)
         {
             performSteps();
             exchange();
             stepsDone = 0;
         }
-        System.out.println("Column " + x + " Terminated.");
     }
 
     /**
@@ -193,7 +194,7 @@ public class Column implements Runnable
         catch (InterruptedException e) {}
 
         // Termination is signaled by 0 steps
-        if (currentSteps == 0) { Thread.currentThread().interrupt();} //TODO: Andere Terminierung
+        if (currentSteps == 0) { terminate = true;}
 
         // Calculate accumulators from neighbour columns in
         if (!isLeftmost())  {receiveHorizontal(receivedFromLeft.getPass());}
@@ -266,7 +267,6 @@ public class Column implements Runnable
      */
     private void initializeNode(Node node)
     {
-        System.out.println("neue Node" + x + " | " + node.getY());
 
         int y = node.getY();
 

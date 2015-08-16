@@ -35,7 +35,7 @@ public class ValueBundle
         /**
          * Creates a new instance of ValueBundle with no values and no convergents.
          *
-         * @param currentSteps the number of steps the sucessor should use
+         * @param currentSteps the number of steps the successor should use
          */
         public ValueBundle(int currentSteps)
         {

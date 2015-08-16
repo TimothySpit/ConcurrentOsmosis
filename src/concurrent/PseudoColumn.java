@@ -19,10 +19,10 @@ public class PseudoColumn
     // Column count for convergence indication
     private final int columnCount;
     
-    // Current step count. Halfed if convergent, doubled if not convergent.
+    // Current step count. Halved if convergent, doubled if not convergent.
     private int steps;
     
-    // Vaiables for periodical plotting
+    // Variables for periodical plotting
     private int stepCount = 0;
     private final int plottingInterval = 10000;
     private int painted = 0;
@@ -99,9 +99,9 @@ public class PseudoColumn
         private TDoubleArrayList oldValues;
         
         /**
-         * Creates a listerner for the last column
+         * Creates a listener for the last column
          * 
-         * @param ex the Exchanger with which this column comunicates with the last column
+         * @param ex the Exchanger with which this column communicates with the last column
          */
         public LeftListener(Exchanger<ValueBundle> ex)
         {
@@ -198,8 +198,8 @@ public class PseudoColumn
     }
     
     /**
-     * Class which comunicates with the first column. It is used to pass the current steps
-     * into the next round.
+     * Class which communicates with the first column. It is used to pass the current steps
+     * into the next round and to create the empty TDoubleArrayList for values.
      */
     public class RightPasser implements Runnable
     {
@@ -209,7 +209,7 @@ public class PseudoColumn
         /**
          * Creates a communicator for the first column.
          * 
-         * @param ex the Exchanger with which this column comunicates with the last column
+         * @param ex the Exchanger with which this column communicates with the last column
          */
         public RightPasser(Exchanger<ValueBundle> ex)
         {
