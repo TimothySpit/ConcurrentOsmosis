@@ -364,7 +364,7 @@ public class Column implements Runnable
      * @return a TDoubleArrayList of size height with the value of existing
      * nodes, where nodes exist, 0.0 everywhere else
      */
-    public TDoubleArrayList getNodeValues()
+    private TDoubleArrayList getNodeValues()
     {
         TDoubleArrayList values = new TDoubleArrayList(ConcOsmosis.getHeight());
         values.fill(0, ConcOsmosis.getHeight(), 0.0);

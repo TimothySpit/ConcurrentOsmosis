@@ -152,23 +152,5 @@ public class ConcOsmosis
         {
             return height;
         }
-        
-        /**
-         * Class for Outputs. Specified by project skeleton.
-         */
-        private static class Converter implements ImageConvertible
-        {
-            /**
-             * Returns the value of the node at the specified position.
-             * 
-             * @param column the column of the desired node
-             * @param row the row of the desired node
-             * @return the value of the node at the specified position
-             */
-            @Override
-            public double getValueAt(int column, int row)
-            {
-                return columns[column].getNodeValues().get(row);
-            }
-        }
+
 }
