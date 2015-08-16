@@ -6,6 +6,13 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.concurrent.Exchanger;
 
+/**
+ * Represents a column in this system. Every column is hold in a new thread.
+ * Its Node exchange first with each other, after a specific number of steps
+ * it exchanges with its neighbours. 
+ * 
+ * @author Timo Speith and Magnus Halbe
+ */
 public class Column implements Runnable
 {
     private final int x;
@@ -22,6 +29,15 @@ public class Column implements Runnable
     private final Exchanger<ValueBundle> rightExchanger;
     private final LinkedList<Node> nodeList;
 
+    /**
+     * Creates a new Instance of column.
+     * 
+     * @param xCoord the x coordinate of this column
+     * @param stepsTotal the steps to make every round
+     * @param ginfo the graph info to be used
+     * @param left the exchanger to the left column
+     * @param right the exchanger to the right column
+     */
     public Column(int xCoord, int stepsTotal, GraphInfo ginfo, Exchanger<ValueBundle> left, Exchanger<ValueBundle> right)
     {
         x = xCoord;
@@ -35,6 +51,9 @@ public class Column implements Runnable
         lastValues.fill(0, ConcOsmosis.getHeight(), 0.0);
     }
 
+    /**
+     * First iterates through the column, then exchanges with neighbours
+     */
     @Override
     public void run()
     {
@@ -206,12 +225,10 @@ public class Column implements Runnable
         //Updates all existing nodes, and creates new ones, if necessary
         while (iterator.hasNext())
         {
-            Node currentNode = iterator.next();
-            int y = currentNode.getY();
+            int y = nodeList.get(iterator.nextIndex()).getY();
             // Checks for new nodes between existing ones
-            iterator.previous();
             littleLoop(previousIndex + 1, y, received, iterator);
-            iterator.next();
+            Node currentNode = iterator.next();
             previousIndex = y;
             currentNode.register(received.get(y));
         }
