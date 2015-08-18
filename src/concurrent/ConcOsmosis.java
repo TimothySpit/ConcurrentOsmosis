@@ -16,6 +16,7 @@ public class ConcOsmosis
         private static Column[] columns;
         
         private static double epsilon;
+        private static final int STEPSUNDERWHICHVALUESAREEXCHANGED = 4;
         
         private static int width, height;
         
@@ -131,6 +132,18 @@ public class ConcOsmosis
         public static double getEpsilon()
         {
             return epsilon;
+        }
+        
+        /**
+         * Returns the step number, under which the 
+         * value bundles are to be filled with all
+         * values in the columns 
+         * 
+         * @return epsilon
+         */
+        public static int getStepsUnderWhichValuesAreExchanged()
+        {
+            return STEPSUNDERWHICHVALUESAREEXCHANGED;
         }
         
         /**

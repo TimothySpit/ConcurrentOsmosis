@@ -22,7 +22,6 @@ public class Column implements Runnable
     
     private final TDoubleArrayList lastValues;
 
-    private boolean terminate;
     private int stepsTotal;
     private int stepsDone;
 
@@ -58,8 +57,7 @@ public class Column implements Runnable
     @Override
     public void run()
     {
-    	terminate = false;
-        while (!terminate)
+        while (!Thread.interrupted())
         {
             performSteps();
             exchange();
@@ -99,7 +97,7 @@ public class Column implements Runnable
                     initializeNode(previous);
                 }
                 
-                // If a next Node was creted due to exchanges
+                // If a next Node was created due to exchanges
                 if (next != null)
                 {
                     iterator.add(next);
@@ -182,7 +180,7 @@ public class Column implements Runnable
         // Convergence calculating
         convergenceDetected = inflowIsOutflowLeft;
         if (convergenceDetected) {convergencesUntilHere++;}
-        if (currentSteps <= 4)   {valuesToExchange.addAll(lastValues);}
+        if (currentSteps <=  ConcOsmosis.getStepsUnderWhichValuesAreExchanged())   {valuesToExchange.addAll(lastValues);}
         
         // Receive values from right neighbour
         try
@@ -194,7 +192,7 @@ public class Column implements Runnable
         catch (InterruptedException e) {}
 
         // Termination is signaled by 0 steps
-        if (currentSteps == 0) { terminate = true;}
+        if (currentSteps == 0) { Thread.currentThread().interrupt();}
 
         // Calculate accumulators from neighbour columns in
         if (!isLeftmost())  {receiveHorizontal(receivedFromLeft.getPass());}

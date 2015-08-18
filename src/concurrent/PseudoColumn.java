@@ -24,7 +24,7 @@ public class PseudoColumn
     
     // Variables for periodical plotting
     private int stepCount = 0;
-    private final int plottingInterval = 10000;
+    private final int plottingInterval = 100000000;
     private int painted = 0;
     private final boolean plottingEnabled = true;
     
@@ -129,7 +129,7 @@ public class PseudoColumn
                     int convergents = bundle.getConvergents();
                     TDoubleArrayList currentValues = bundle.getValues();
                     // Euclidean norm is calculated, when convergence is detected
-                    if (getSteps() <= 4 && !oldValues.isEmpty())
+                    if (getSteps() <= ConcOsmosis.getStepsUnderWhichValuesAreExchanged() && !oldValues.isEmpty())
                     {
                     	double euclideanNorm = differenceNorm(oldValues, currentValues);
                     	if (euclideanNorm < ConcOsmosis.getEpsilon())
